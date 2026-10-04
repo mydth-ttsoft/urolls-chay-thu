@@ -262,6 +262,7 @@ tr.new td{animation:hl 2.4s ease-out}
 .phone .hero-body>.prog{position:absolute;bottom:0;left:40px;right:40px;height:5px;border-radius:3px 3px 0 0}
 .phone .hero-body .row+.row,.phone .hero-body .sw+.sw{box-shadow:inset 0 1px 0 var(--raise-line)}
 .phone .hero-body.pad{padding:var(--s5) var(--pad) var(--s5)}
+.phone .hero-body.lay-ds{border-radius:0;max-height:171px;overflow-y:auto;box-shadow:inset 0 1px 0 var(--raise-line)}
 .phone .hero-empty{margin:0;padding:var(--s4);text-align:center;font-size:var(--t-cap);font-weight:600;color:var(--hero-ink-2)}
 .phone .facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));padding:var(--s2) 0 var(--s3)}
 .phone .facts>div{display:flex;flex-direction:column;min-width:0;padding:0 var(--s2) 0 var(--pad)}
@@ -639,8 +640,10 @@ function duyetLuot(chu) {
 function ketThuc() {
   if (!online()) return;
   const xe = S.sess.xe, man = S.sess.man; duyetLuot('Kết thúc');
-  go(man === 'xa' ? 'xa-lo' : 'ghep-xe');   // Xả vải: về danh sách Lô · Màu · Article (#67)
-  toast('ok', `Đã kết thúc ${tx(xe)}.`);
+  // Xả vải: giữ dòng đã chọn, vào thẳng màn quét xe kế (xả liên tục); dòng đã hết cây chờ xả → về Danh sách Lô hàng (R13)
+  const c = man === 'xa' && S.chon, con = c && choLo(c.lo, c.vai).length;
+  if (man !== 'xa') go('ghep-xe'); else if (con) go('xa-xe'); else { S.chon = null; go('xa-lo'); }
+  toast('ok', `Đã kết thúc ${tx(xe)}.` + (c && !con ? ` ${LO[c.lo].lo} · ${mauArt(c.vai)} đã xả hết cây.` : ''));
 }
 // Thoát app, đăng xuất, mở app sang ngày khác → lượt đang mở tự Kết thúc như R13, không hỏi;
 // chưa xả cây nào thì bỏ lượt (R6). Mất mạng thì chưa ghi được → lượt vẫn mở (R26). Trả về true khi đã đóng lượt.
@@ -839,9 +842,9 @@ function dongCay({ c, lo, xa, kh, met, on, cu, ghi, a, ten, lop = '', them = '' 
 // Xe SMB ngoài dải 101–500 hoặc để trống: nhãn ghi NaN kèm số đã ghi chữ nhỏ (R25, CR-002)
 const nhanXe = xe => xeHopLe(xe) ? `Xe ${esc(xe)}` : `NaN <small>${esc(txLa(xe))}</small>`;
 // Thẻ một xe: nhãn xe góc trên trái (dính dưới khối đầu màn khi cuộn) + các dòng cây. CHỈ bấm giữ nhãn mới lấy / ghép cả xe (R15, R19, CR-003);
-// chạm nhanh nhãn chỉ nhắc, bấm giữ dòng cây không lấy cả xe. Nhãn xám · nền trắng khi thẻ có dòng chọn · xanh đặc khi cả xe đã lấy
+// chạm nhanh nhãn = bung / thu xe, bấm giữ dòng cây không lấy cả xe. Nhãn xám · nền trắng khi thẻ có dòng chọn · xanh đặc khi cả xe đã lấy
 // d2c #72: nhãn xe ghi số cây · tổng số mét các cây đang hiện của xe (m)
-// thu: màn Ghép (d2c #74) — true = thu gọn chỉ còn nhãn xe, false = đang bung; null = không thu gọn (màn Bàn cắt)
+// thu: màn Ghép (d2c #74) và màn Bàn cắt (d2c ④ 04/10) — true = thu gọn chỉ còn nhãn xe, false = đang bung
 const theXe = (xe, on, viec, rows, n, m, thu) => `<div class="card xe" data-xe="${esc(xe)}"><button class="xe-nhan${xeHopLe(xe) ? '' : ' la'}${on ? ' on' : ''}" aria-pressed="${on}" aria-label="Giữ để ${viec}" data-giu="tichxe" data-v="${esc(xe)}"><span class="tag">${on ? ic('check_circle', '', true) : ''}${nhanXe(xe)}<span class="n">· ${n} cây${m != null ? ` · ${so(Math.round(m * 10) / 10)} m` : ''}</span>${thu == null ? '' : ic(thu ? 'expand_more' : 'expand_less', 'i-s c-3')}</span></button>${thu ? '' : rows}</div>`;
 const heroXe = (ovl, xe, n, than) => `<div class="hero" id="xe-hero"><div class="hero-h"><span class="ovl">${ovl}</span><b class="hero-big">${tx(xe, 1)}</b><span class="pill glass"><b>${n}</b> cây</span></div>${than}</div>`;
 // Thẻ xe dính (màn xả, ghép — canvas 6c, chị HanTT 02/10): (1) kéo lên = kéo danh sách cây trong xe lên, đầu thẻ xanh đứng yên đủ cỡ,
@@ -921,10 +924,10 @@ function scrHome() {
   <button class="nav-i" data-a="logout">${ic('switch_account', 'c-2')}<span>Đổi người dùng</span></button>
   <span class="drawer-f">Powered by TTSOFT</span></nav></div></div>`;
 }
-// Quét tem xe sau khi đã chọn Lô · Màu · Article (#67): đầu màn ghi dòng đã chọn, nút quay lại về danh sách
+// Quét tem xe sau khi đã chọn dòng ở Danh sách Lô hàng (#67): đầu màn ghi dòng đã chọn, nút Đổi Lô hàng / quay lại về danh sách
 function scrXaXe() {
   const c = S.chon;
-  return `<div class="scr quet">${bar('xa-lo', 'Xả vải', c ? `${LO[c.lo].lo} · ${mauArt(c.vai)}` : '')}${cam('tem xe')}${banPhim('tem xe')}</div>`;
+  return `<div class="scr quet">${bar('xa-lo', 'Xả vải', c ? `${LO[c.lo].lo} · ${mauArt(c.vai)}` : '', nutBar('doilo', 'Đổi Lô hàng'))}${cam('tem xe')}${banPhim('tem xe')}</div>`;
 }
 function scrGhepXe() {
   return quet('Ghép xe vải', 'tem xe');
@@ -936,7 +939,7 @@ function bangLuot(s) {
   const ds = s.ds.slice().reverse();
   if (!ds.length) return heroXe('Đã xả vào', s.xe, 0, '<p class="hero-empty">Chưa có cây.</p>');
   return xeDinh('Đã xả vào', s.xe, ds.length, `<div class="hero-body xe-than" id="bang-luot">${ds.map(e => { const c = cayBy(e.cay);
-    return `<div class="sw${S.vuot === e.seq ? ' mo' : ''}" data-sw="${e.seq}">${dongCay({ c, lo: LO[c.lo].lo, met: c.met, lop: ' sw-in' })}<button class="sw-xoa" data-a="xoa" data-v="${e.seq}" aria-label="Xoá ${esc(c.ma)}">${ic('delete', 'i-m')}Xoá</button></div>`; }).join('')}</div>`);
+    return `<div class="sw${S.vuot === String(e.seq) ? ' mo' : ''}" data-sw="${e.seq}">${dongCay({ c, lo: LO[c.lo].lo, met: c.met, lop: ' sw-in' })}<button class="sw-xoa" data-a="xoa" data-v="${e.seq}" aria-label="Xoá ${esc(c.ma)}">${ic('delete', 'i-m')}Xoá</button></div>`; }).join('')}</div>`);
 }
 // Đội xả làm theo Lô và Màu: mỗi dòng một Lô · Màu · Article của phiếu xuất kho chưa duyệt, kèm số cây chờ xả (R8). Dòng không còn cây khớp thì không có
 function dsLo() { const ds = []; for (const lo of Object.keys(LO)) for (const vai of new Set(S.pxk.filter(p => p.lo === lo && !p.duyet).flatMap(p => p.vai))) { const n = choLo(lo, vai).length; if (n) ds.push({ lo, vai, n }); }
@@ -1023,14 +1026,15 @@ function scrLayBan() {
   const prog = tt ? '' : `<div class="prog"><i style="width:${pct}%"></i></div>`;
   const nXe = bb.xe.reduce((t, n) => t + n.ds.length, 0), nDu = bb.du.length;
   const tb = (k, ten, n) => `<button role="tab" aria-selected="${tab === k}" data-a="tab" data-v="${k}"><span class="lb">${ten}<span class="bdg">· ${n}</span></span></button>`;
-  const hero = `<div class="stick" id="dem-ban"><div class="hero"><div class="facts" id="the-vai">${facts}</div><div class="hero-body pad">${prog}${nums}</div></div><div class="tabs" role="tablist">${tb('xe', 'Cây trên xe', nXe)}${tb('du', 'Cây đã trải', nDu)}</div></div>`;
+  // d2c ①②③ 04/10: cây đã lấy cho bàn nằm trong thẻ Bàn cắt (như cây đã xả trong thẻ xe ở màn Xả vải), không có nút tích; vuốt trái → Xoá = bỏ lấy, cây về xe (R19)
+  const lay = bb.vua.length ? `<div class="hero-body lay-ds" id="bang-lay">${bb.vua.map(({ c, l }) => `<div class="sw${S.vuot === 'L' + c.id ? ' mo' : ''}" data-sw="L${c.id}">${dongCay({ c, xa: daXa(l.r), met: conMet(c), lop: ' sw-in' })}<button class="sw-xoa" data-a="tich" data-v="${c.id}" aria-label="Bỏ lấy ${esc(c.ma)}">${ic('delete', 'i-m')}Xoá</button></div>`).join('')}</div>` : '';
+  const hero = `<div class="stick" id="dem-ban"><div class="hero"><div class="facts" id="the-vai">${facts}</div><div class="hero-body pad">${prog}${nums}</div>${lay}</div><div class="tabs" role="tablist">${tb('xe', 'Cây trên xe', nXe)}${tb('du', 'Cây đã trải', nDu)}</div></div>`;
   const ghi = c => daDung(c) ? `xuất ${so(metX(c))} · dùng ${so(daDung(c))}` : '';
   const than = tab === 'du'
     ? (nDu ? `<div class="card sunk" id="khoi-du">${bb.du.map(({ c }) => dongCay({ c, met: conMet(c), on: duTich.includes(c.id), a: 'tichdu', ten: 'Dùng phần dư', them: ' data-du="1"' })).join('')}</div>`
       : `<p class="note">Chưa có cây đã trải còn đủ ${so(b.dai)} m.</p>`)
-    : (bb.vua.length ? `<div class="sect">Đã lấy cho bàn · ${bb.vua.length} cây</div><div class="card" id="bang-lay">${bb.vua.map(({ c, l }) => dongCay({ c, xa: daXa(l.r), met: conMet(c), on: true, a: 'tich', ten: 'Bỏ lấy' })).join('')}</div>` : '')
-      + (bb.xe.length ? `${bb.vua.length ? '<div class="sect">Xe còn cây</div>' : ''}<div id="bang-xe">${bb.xe.map(n => theXe(n.xe, false, 'lấy cả ' + tenXe(n.xe),
-        n.ds.map(({ c, l }) => dongCay({ c, xa: daXa(l.r), kh: u(c, l.r).k === 'nokhai', met: conMet(c), ghi: ghi(c), on: false, a: 'tich', ten: 'Lấy' })).join(''), n.ds.length, n.ds.reduce((t, { c }) => t + conMet(c), 0))).join('')}</div>`
+    : (bb.xe.length ? `<div id="bang-xe">${bb.xe.map(n => theXe(n.xe, false, 'lấy cả ' + tenXe(n.xe),
+        n.ds.map(({ c, l }) => dongCay({ c, xa: daXa(l.r), kh: u(c, l.r).k === 'nokhai', met: conMet(c), ghi: ghi(c), on: false, a: 'tich', ten: 'Lấy' })).join(''), n.ds.length, n.ds.reduce((t, { c }) => t + conMet(c), 0), !(P.mo || []).includes(n.xe))).join('')}</div>`
       : bb.vua.length ? '' : `<p class="note">${LO[b.lo].lo} chưa có cây ${VAI[b.vai]} đã xả.</p>`);
   return `<div class="scr">${bar('home', LO[b.lo].lo, b.so, nutBar('doiban', 'Đổi bàn'))}<div class="body" id="ds-ban">${hero}<div class="tab-body">${than}</div></div></div>`;
 }
@@ -1249,7 +1253,7 @@ function doAct(a, v) {
       if (v === 'xa-xe' && !S.chon) { go('xa-lo'); break; }
       S.vuot = null; go(v); break;
     case 'boxe': { if (!S.sess) break; const man = S.sess.man; boXe(); go(man + '-xe'); break; }
-    case 'doilo': if (S.sess) go('xa-lo'); break;
+    case 'doilo': if (S.sess || S.screen === 'xa-xe') go('xa-lo'); break;
     // Đổi bàn: về màn quét tem bàn cắt; cây đã tích đã ghi trên phiếu, giữ nguyên (R17)
     case 'doiban': if (S.screen === 'lay-ban') go('lay'); break;
     case 'menu': menuMo = !menuMo; NGAN_VAO = menuMo; break;
@@ -1270,7 +1274,7 @@ function doAct(a, v) {
     case 'ketthuc': S.sheet = { kind: 'ketthuc' }; break;
     case 'ketthucok': ketThuc(); break;
     // Ô tích ở bảng lấy: tích = lấy (hỏi trước nếu chưa đủ ngày xả), bỏ tích = trả về chưa lấy (R19)
-    case 'tich': { const c = cayBy(v); if (!c) break; const t = trangThai(v); if (t === 'lay') boLay(c); else if (t === 'tren') layCay(c); break; }
+    case 'tich': { const c = cayBy(v); if (!c) break; S.vuot = null; const t = trangThai(v); if (t === 'lay') boLay(c); else if (t === 'tren') layCay(c); break; }
     // Bấm giữ nhãn xe: màn Lấy vải = lấy / bỏ lấy cả xe (R19) · màn Ghép = ghép cả xe (R15)
     case 'tichxe': if (S.screen === 'lay-ban') layXe(v); else if (S.screen === 'ghep' && S.sess) ghepXe(v); break;
     // Màn Lô lấy vải: tab Cây trên xe · Cây đã trải (R20, CR-001)
@@ -1311,7 +1315,7 @@ document.addEventListener('click', e => {
   if (giu && !el) {
     if (Date.now() - GIU_LUC < 800) return;                     // nhả tay sau khi giữ đủ: đã làm rồi
     if (e.detail === 0) doAct(giu.dataset.giu, giu.dataset.v);  // Enter / Space
-    else if (S.screen === 'ghep') { const mo = S.params.mo = S.params.mo || [], i = mo.indexOf(giu.dataset.v); if (i < 0) mo.push(giu.dataset.v); else mo.splice(i, 1); }   // #74: chạm = bung / thu xe
+    else if (S.screen === 'ghep' || S.screen === 'lay-ban') { const mo = S.params.mo = S.params.mo || [], i = mo.indexOf(giu.dataset.v); if (i < 0) mo.push(giu.dataset.v); else mo.splice(i, 1); }   // #74: chạm = bung / thu xe
     else toast('warn', 'Bấm giữ nhãn xe để lấy cả xe.');
     render(); return;
   }
@@ -1339,7 +1343,7 @@ document.addEventListener('submit', e => {
 // Dùng pointer events nên chạy được cả ngón tay lẫn chuột; dòng đứng yên, nút Xoá theo ngón tay trượt vào từ mép phải, che cột số mét
 let KEO = null;
 const XOA_W = 76;
-document.addEventListener('pointerdown', e => { const r = e.target.closest && e.target.closest('.sw-in'); KEO = r ? { r: r.parentNode.querySelector('.sw-xoa'), x0: e.clientX, dx: 0, seq: +r.parentNode.dataset.sw } : null; if (KEO) KEO.r.classList.add('keo'); });
+document.addEventListener('pointerdown', e => { const r = e.target.closest && e.target.closest('.sw-in'); KEO = r ? { r: r.parentNode.querySelector('.sw-xoa'), x0: e.clientX, dx: 0, seq: r.parentNode.dataset.sw } : null; if (KEO) KEO.r.classList.add('keo'); });
 document.addEventListener('pointermove', e => { if (!KEO) return; KEO.dx = e.clientX - KEO.x0; const goc = S.vuot === KEO.seq ? 0 : XOA_W; KEO.r.style.transform = `translateX(${Math.max(0, Math.min(XOA_W, goc + KEO.dx))}px)`; });
 function thaKeo() {
   if (!KEO) return; const k = KEO, truoc = S.vuot; KEO = null; k.r.classList.remove('keo'); k.r.style.transform = '';
