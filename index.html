@@ -661,7 +661,7 @@ function vaoXe(c, kieu = 'Xả mới', gioGoc = null, tu = null) {
   if (!online()) return;
   const tren = trenXe(S.sess.xe);
   const loMoi = tren.length && !tren.some(x => x.c.lo === c.lo);
-  if (loMoi && S.sess.man === 'xa') { const lo0 = tren[0].c.lo; if (trangThai(c.id) === 'chua') c.lo = null; toast('err', `${tx(S.sess.xe, 1)} đang chứa ${LO[lo0].lo} — xả vải mỗi xe một Lô.`); return; }
+  if (loMoi && S.sess.man === 'xa') { const lo0 = tren[0].c.lo; if (trangThai(c.id) === 'chua') c.lo = null; toast('err', `${tx(S.sess.xe, 1)} đang chứa ${LO[lo0].lo} — quét xe khác hoặc chọn dòng ${LO[lo0].lo}.`); return; }
   if (loMoi && !S.sess.warned[c.lo]) { S.sheet = { kind: 'tronlo', cay: c.id, kieu, gioGoc, tu }; log(`Hỏi: ${tx(S.sess.xe)} đang chứa Lô khác, thêm cây ${LO[c.lo].lo}?`, 'wr'); return; }
   const { r } = themDong(c, kieu, gioGoc);
   S.sess.ds.push({ seq: r.seq, cay: c.id, tu });
@@ -686,7 +686,7 @@ function duyetLuot(chu) {
   S.sess = null; S.sheet = null; S.vuot = null;
 }
 function ketThuc() {
-  if (!online()) { S.sheet = null; toast('err', 'Mất mạng, chưa ghi — chưa kết thúc được xe.'); return; }
+  if (!online()) { S.sheet = null; toast('err', 'Mất mạng, chưa ghi — lượt xả chưa kết thúc được.'); return; }
   const xe = S.sess.xe, man = S.sess.man; duyetLuot('Kết thúc');
   // Xả vải: giữ dòng đã chọn, vào thẳng màn quét xe kế (xả liên tục); dòng đã hết cây chờ xả → về Danh sách Lô hàng (R13)
   const c = man === 'xa' && S.chon, con = c && choLo(c.lo, c.vai).length;
@@ -1102,7 +1102,7 @@ function scrLayBan() {
       : `<p class="note">Chưa có cây đã trải còn đủ ${so(b.dai)} m.</p>`)
     : (bb.xe.length ? `<div id="bang-xe">${bb.xe.map(n => theXe(n.xe, false, 'lấy cả ' + tenXe(n.xe),
         n.ds.map(({ c, l }) => dongCay({ c, xa: daXa(l.r), kh: u(c, l.r).k === 'nokhai', met: conMet(c), ghi: ghi(c), on: false, a: 'tich', ten: 'Lấy' })).join(''), n.ds.length, n.ds.reduce((t, { c }) => t + conMet(c), 0), (bb.xe.length > 1) !== (P.mo || []).includes(n.xe))).join('')}</div>`
-      : bb.vua.length ? '' : `<p class="note">${LO[b.lo].lo} chưa có cây ${VAI[b.vai]} đã xả.</p>`);
+      : bb.vua.length ? '' : `<p class="note">${LO[b.lo].lo} chưa có cây ${mauArt(b.vai)} đã xả.</p>`);
   return `<div class="scr">${bar('home', LO[b.lo].lo, b.so, nutBar('doiban', 'Đổi bàn'))}<div class="body" id="ds-ban">${hero}<div class="tab-body">${than}</div></div></div>`;
 }
 // Ghép xe vải: xe đích đứng đầu (chỉ để xem trên xe đang có gì); sau đó các xe đang lấy dở: có ≥ 1 cây Đã lấy
