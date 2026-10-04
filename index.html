@@ -204,7 +204,7 @@ tr.new td{animation:hl 2.4s ease-out}
 .phone .grp-h.on+.row.on{box-shadow:inset 0 1px 0 var(--sel-line)}
 .phone .card.xe{overflow:clip}
 /* đồng bộ 04/10: thẻ xe (Lấy vải, Ghép) cách nhau và có đầu thẻ giống nhóm Lot ở màn Xả vải — cao 48px, tên 15px đậm bên trái,
-   số cây · số mét xám bên phải, mũi tên cuối; đầu thẻ dính đầu vùng cuộn; cả xe đã lấy thì đầu thẻ nền xanh */
+   số cây · số mét xám bên phải, mũi tên cuối; đầu thẻ dính đầu vùng cuộn; thẻ xe chỉ có cây chưa lấy (R15, R19) */
 .phone .xe-nhan{position:sticky;top:var(--dinh,0px);z-index:3;display:flex;align-items:center;width:100%;height:48px;padding:0 var(--pad);border:none;background:var(--card);font:inherit;cursor:pointer;text-align:left}
 .phone .card.xe:has(>.row) .xe-nhan{box-shadow:inset 0 -1px 0 var(--line)}
 .phone .card.xe:has(>.xe-nhan+.row.on) .xe-nhan{background:var(--sel)}
@@ -895,7 +895,7 @@ function dongCay({ c, lo, xa, kh, met, on, cu, ghi, a, ten, lop = '', them = '' 
 // Xe SMB ngoài dải 101–500 hoặc để trống: nhãn ghi NaN kèm số đã ghi chữ nhỏ (R25, CR-002)
 const nhanXe = xe => xeHopLe(xe) ? `Xe ${esc(xe)}` : `NaN <small>${esc(txLa(xe))}</small>`;
 // Thẻ một xe: đầu thẻ xe góc trên trái (dính dưới khối đầu màn khi cuộn) + các dòng cây. CHỈ bấm giữ đầu thẻ mới lấy / ghép cả xe (R15, R19, CR-003);
-// chạm nhanh nhãn = bung / thu xe, bấm giữ dòng cây không lấy cả xe. Nhãn xám · nền trắng khi thẻ có dòng chọn · xanh đặc khi cả xe đã lấy
+// chạm nhanh đầu thẻ = bung / thu xe, bấm giữ dòng cây không lấy cả xe. Thẻ xe chỉ có cây chưa lấy: cây lấy / ghép thì rời xe (R15, R19)
 // d2c #72: đầu thẻ xe ghi số cây · tổng số mét các cây đang hiện của xe (m)
 // thu: màn Ghép (d2c #74) và màn Bàn cắt (d2c ④ 04/10) — true = thu gọn chỉ còn đầu thẻ xe, false = đang bung
 const theXe = (xe, on, viec, rows, n, m, thu) => `<div class="card xe" data-xe="${esc(xe)}"><button class="xe-nhan${xeHopLe(xe) ? '' : ' la'}${on ? ' on' : ''}" aria-pressed="${on}" aria-label="Giữ để ${viec}" data-giu="tichxe" data-v="${esc(xe)}"><span class="tag">${on ? ic('check_circle', '', true) : ''}${nhanXe(xe)}<span class="n">${n} cây${m != null ? ` · ${so(Math.round(m * 10) / 10)} m` : ''}</span>${thu == null ? '' : ic(thu ? 'expand_more' : 'expand_less', 'i-s c-3')}</span></button>${thu ? '' : rows}</div>`;
@@ -1065,7 +1065,7 @@ const tenXe = xe => esc(xeHopLe(xe) ? tx(xe) : 'xe NaN, số đã ghi ' + txLa(x
 // Lấy vải theo Bàn cắt (không có khung camera, nút Đổi bàn về màn quét bàn). Đầu màn Lô, dưới là mã Bàn cắt (R17).
 // Khối dính đầu vùng cuộn: thẻ lớn Màu SP · Loại BTP · Article; Cần | Thiếu (Đủ: Thiếu 0 m xanh lá · thừa: nhãn Thừa cam), thanh tiến độ ở đáy phần trắng
 // (luôn hiện: xanh lá, thừa thì cam), dưới Thiếu là số cây dở · mới · số lớp các cây đó trải được (R18); ngay dưới thẻ là 2 tab Cây trên xe (mặc định) · Cây đã trải.
-// Tab Cây đã trải: hiện hết cây, chọn chỉ để tính vào Thiếu, không ghi phiếu (R20, CR-001). Tab Cây trên xe: mỗi xe một thẻ, chạm dòng = lấy / bỏ lấy cây đó;
+// Tab Cây đã trải: hiện hết cây, chọn chỉ để tính vào Thiếu, không ghi phiếu (R20, CR-001). Tab Cây trên xe: mỗi xe một thẻ, chạm dòng = lấy cây đó (cây rời xe vào thẻ Bàn cắt, bỏ lấy làm trong thẻ Bàn cắt — R12, R19);
 // bấm giữ đầu thẻ xe = lấy cả xe (R19, CR-003)
 // Thứ tự chọn ở thẻ Bàn cắt (cây lấy từ xe + cây đã trải chọn): bỏ cây đã bỏ chọn, thêm cây mới chọn vào cuối — gọi ngay sau mỗi lần bấm
 function thuTuChon(b, P, dm) {
@@ -1319,9 +1319,9 @@ function render() {
 // Mở app sau khi thoát: chưa đăng nhập → đăng nhập; lượt còn mở (vì mất mạng lúc thoát) → vào lại, trừ khi đã sang ngày khác
 function moLai() {
   if (!S.user) go('login');
-  else if (S.sess) { go(S.sess.man); sangNgayKhac(); }   // vào lại lượt trước, rồi mới xét sang ngày (báo đỏ không bị go() xoá)
+  else if (S.sess) { go(S.sess.man); if (!sangNgayKhac() && S.baoMoLai) toast('err', S.baoMoLai); }   // vào lại lượt trước, rồi mới xét sang ngày / báo mất mạng (báo đỏ không bị go() xoá)
   else go(S.sauThoat || 'home');
-  S.sauThoat = null;
+  S.sauThoat = null; S.baoMoLai = null;
 }
 function dangNhap(tk) { S.user = { tk, ten: 'Trần Văn Bình' }; log('Đăng nhập ' + tk, 'in'); go('home'); }
 function doAct(a, v) {
@@ -1387,7 +1387,7 @@ function doAct0(a, v) {
     case 'mantat': if (S.appOff) break; if (S.manTat) { S.manTat = false; log('Bật màn hình', 'in'); sangNgayKhac(); } else { S.manTat = true; S.sheet = null; log('Tắt màn hình', 'in'); } break;
     // Thoát app: lượt đang mở tự kết thúc (R6); mở lại → màn quét xe
     case 'thoat': if (S.appOff) { S.appOff = false; log('Mở lại app', 'in'); moLai(); }
-      else { S.manTat = false; log('Thoát app', 'in'); const co = !!S.sess, man = co && S.sess.man; if (co && !tuKetThuc('thoát app')) toast('err', 'Mất mạng, chưa ghi — lượt xả chưa kết thúc được.'); S.sauThoat = co && !S.sess ? manSauLuot(man) : null; S.appOff = true; S.sheet = null; } break;
+      else { S.manTat = false; log('Thoát app', 'in'); const co = !!S.sess, man = co && S.sess.man; if (co && !tuKetThuc('thoát app')) S.baoMoLai = 'Mất mạng, chưa ghi — lượt xả chưa kết thúc được.'; S.sauThoat = co && !S.sess ? manSauLuot(man) : null; S.appOff = true; S.sheet = null; } break;
     // Sáng hôm sau: tua tới 07:00 ngày kế tiếp rồi mở app (R6: mở app sang ngày khác)
     case 'homsau': { const d = new Date(now()); S.offset += new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1, 7, 0).getTime() - now(); log('Sang 07:00 ngày hôm sau', 'in');
       S.manTat = false; if (S.appOff) { S.appOff = false; moLai(); } else sangNgayKhac(); break; }
