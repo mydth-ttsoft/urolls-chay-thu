@@ -445,7 +445,7 @@ const MIN = 60000, H = 60 * MIN, D = 24 * H;
 // Article theo mã vải (Mã NPL · Article · Màu trên phiếu xuất kho)
 const ART = { 'CT32-NV': 'CT32S-NV', 'CT32-WH': 'CT32S-WH', 'KT-WH': 'KTCVC-WH', 'PL-GR': 'PL150D-GR', 'PL-NV': 'PL150D-NV' };
 const VAI = { 'CT32-NV': 'Cotton 32S · Navy', 'CT32-WH': 'Cotton 32S · White', 'KT-WH': 'Knit CVC · White', 'PL-GR': 'Poly 150D · Grey', 'PL-NV': 'Poly 150D · Navy' };
-// Bàn cắt trên SMB, tra theo 4 số thứ tự trên tem, chỉ trong các bàn Chưa thực hiện (tt: 'chua'): số bàn, Lô, mã vải · màu, Màu SP · Loại BTP · Article, số lớp × chiều dài sơ đồ theo Lệnh cắt (R17, R18, D9).
+// Bàn cắt trên SMB, tra theo 4 số thứ tự trên tem, chỉ trong các bàn Chưa thực hiện (tt: 'chua'): số bàn, Lô, mã vải · màu, Màu SP · Loại BTP · Article, số lớp × chiều dài sơ đồ theo Lệnh cắt (R17, R18, D8).
 // Mỗi Bàn cắt một màu (Lệnh cắt chia mỗi màu một Bàn cắt)
 const BAN = {
   '1234': { so: 'BC-TSV-09-2026-1234', lo: 'L03', vai: 'CT32-NV', mau: 'Navy', btp: 'Chính', art: 'CT32S-NV', lop: 50, dai: 9, tt: 'chua' },
@@ -468,7 +468,7 @@ const NGAY_U = [
 ];
 function seed() {
   // Cây tồn kho SMW: mã cây, mã vải (Mã NPL · Article · Màu), Lot, số mét tồn (= số mét trên tem cây). Lô của cây = Lô đã chạm lúc xả (R8, Luật 1); cây chưa xả chưa có Lô.
-  // metXuat: số mét trên phiếu xuất kho, có khi kho chọn cây xuất (D11); chưa có → cây không hiện ở Lấy vải, Ghép (R22). Cây mẫu đã xả coi như kho đã xuất
+  // metXuat: số mét trên phiếu xuất kho, có khi kho chọn cây xuất (D10); chưa có → cây không hiện ở Lấy vải, Ghép (R22). Cây mẫu đã xả coi như kho đã xuất
   const c = (id, ma, vai, lot, met, lo = null) => ({ id, ma, vai, lot, met, lo, metXuat: lo ? met : null });
   const cay = [
     c('k1', 'C-0801', 'CT32-NV', 'A', 85),
@@ -540,7 +540,7 @@ function seed() {
     c('k66', '94419', 'PL-GR', 'D', 90),
   ];
   // Phiếu xuất kho SMW kho lập khi xuất vải sang khu xả vải: Lô + mã vải, chưa có cây. Chưa duyệt → Lô hiện ở màn xả (R8).
-  // Cuối ngày kho bấm "Lấy cây vải đã xả" rồi duyệt trên SMW (D11) — app không làm
+  // Cuối ngày kho bấm "Lấy cây vải đã xả" rồi duyệt trên SMW (D10) — app không làm
   const pxk = [
     { so: 'PX-0940', lo: 'L03', vai: ['CT32-NV'], duyet: false },
     { so: 'PX-0941', lo: 'L04', vai: ['KT-WH'], duyet: false },
@@ -548,20 +548,20 @@ function seed() {
     { so: 'PX-0931', lo: 'L05', vai: ['PL-NV'], duyet: true },   // đã duyệt → cây Poly Navy C-0999 không hiện ở Lô 05
   ];
   let seq = 0;
-  const r = (cay, gioXa, o = {}) => ({ cay, gioXa, daLay: false, gioLay: null, nguoiLay: null, seq: ++seq, ...o });
+  const r = (cay, gioXa, o = {}) => ({ cay, gioXa, daLay: false, seq: ++seq, ...o });
   const tA = T0 - 2 * D - 3 * H, tB = T0 - 2 * D + 3 * H + 15 * MIN;
   const phieu = [
     { so: 'GTV-0014', xe: 'xe 7', lo: 'L03', tt: 'duyet', nguon: 'SMB', ht: T0 - 3 * D, rows: [r('k50', T0 - 3 * D), r('k51', T0 - 3 * D + 20 * MIN)] },
-    { so: 'GTV-0011', xe: '103', lo: 'L03', tt: 'duyet', nguon: 'app', ht: tA, rows: [r('k20', tA), r('k21', tA + 4 * MIN), r('k22', tA + 9 * MIN, { daLay: true, gioLay: T0 - 70 * MIN, nguoiLay: 'Hoa' }), r('k27', tA + 10 * MIN, { daLay: true, gioLay: T0 - 70 * MIN, nguoiLay: 'Hoa' }), r('k23', tB), r('k26', tA + 15 * MIN, { daLay: true, gioLay: T0 - 2 * H, nguoiLay: 'Hoa' })] },
-    { so: 'GTV-0007', xe: '108', lo: 'L03', tt: 'duyet', nguon: 'app', ht: T0 - 2 * D, rows: [r('k70', T0 - 2 * D, { daLay: true, gioLay: T0 - 3 * H, nguoiLay: 'Hoa' }), r('k71', T0 - 2 * D + 5 * MIN)] },
+    { so: 'GTV-0011', xe: '103', lo: 'L03', tt: 'duyet', nguon: 'app', ht: tA, rows: [r('k20', tA), r('k21', tA + 4 * MIN), r('k22', tA + 9 * MIN, { daLay: true }), r('k27', tA + 10 * MIN, { daLay: true }), r('k23', tB), r('k26', tA + 15 * MIN, { daLay: true })] },
+    { so: 'GTV-0007', xe: '108', lo: 'L03', tt: 'duyet', nguon: 'app', ht: T0 - 2 * D, rows: [r('k70', T0 - 2 * D, { daLay: true }), r('k71', T0 - 2 * D + 5 * MIN)] },
     { so: 'GTV-0006', xe: '112', lo: 'L03', tt: 'duyet', nguon: 'app', ht: T0 - 3 * D, rows: [r('k80', T0 - 3 * D), r('k81', T0 - 3 * D + 6 * MIN), r('k82', T0 - 3 * D + 12 * MIN)] },
-    { so: 'GTV-0005', xe: '113', lo: 'L03', tt: 'duyet', nguon: 'app', ht: T0 - 3 * D - 2 * H, rows: [r('k83', T0 - 3 * D - 2 * H, { daLay: true, gioLay: T0 - 5 * H, nguoiLay: 'Hoa' }), r('k84', T0 - 3 * D - 2 * H + 5 * MIN), r('k85', T0 - 3 * D - 2 * H + 9 * MIN), r('k86', T0 - 3 * D - 2 * H + 14 * MIN)] },
-    { so: 'GTV-0004', xe: '114', lo: 'L03', tt: 'duyet', nguon: 'app', ht: T0 - 2 * D - 20 * H, rows: [r('k87', T0 - 2 * D - 20 * H, { daLay: true, gioLay: T0 - 4 * H, nguoiLay: 'Hoa' }), r('k88', T0 - 2 * D - 20 * H + 7 * MIN), r('k89', T0 - 2 * D - 20 * H + 11 * MIN)] },
+    { so: 'GTV-0005', xe: '113', lo: 'L03', tt: 'duyet', nguon: 'app', ht: T0 - 3 * D - 2 * H, rows: [r('k83', T0 - 3 * D - 2 * H, { daLay: true }), r('k84', T0 - 3 * D - 2 * H + 5 * MIN), r('k85', T0 - 3 * D - 2 * H + 9 * MIN), r('k86', T0 - 3 * D - 2 * H + 14 * MIN)] },
+    { so: 'GTV-0004', xe: '114', lo: 'L03', tt: 'duyet', nguon: 'app', ht: T0 - 2 * D - 20 * H, rows: [r('k87', T0 - 2 * D - 20 * H, { daLay: true }), r('k88', T0 - 2 * D - 20 * H + 7 * MIN), r('k89', T0 - 2 * D - 20 * H + 11 * MIN)] },
     { so: 'GTV-0003', xe: '115', lo: 'L03', tt: 'duyet', nguon: 'app', ht: T0 - 2 * D - 12 * H, rows: [r('k90', T0 - 2 * D - 12 * H), r('k91', T0 - 2 * D - 12 * H + 4 * MIN), r('k92', T0 - 2 * D - 12 * H + 8 * MIN), r('k93', T0 - 2 * D - 12 * H + 13 * MIN)] },
-    { so: 'GTV-0002', xe: '116', lo: 'L03', tt: 'duyet', nguon: 'app', ht: T0 - 3 * D - 1 * H, rows: [r('k100', T0 - 3 * D - 1 * H, { daLay: true, gioLay: T0 - 2 * H, nguoiLay: 'Hoa' }), r('k101', T0 - 3 * D - 1 * H + 5 * MIN), r('k102', T0 - 3 * D - 1 * H + 10 * MIN)] },
-    { so: 'GTV-0001', xe: '117', lo: 'L03', tt: 'duyet', nguon: 'app', ht: T0 - 3 * D - 2 * H, rows: [r('k103', T0 - 3 * D - 2 * H, { daLay: true, gioLay: T0 - 3 * H, nguoiLay: 'Hoa' }), r('k104', T0 - 3 * D - 2 * H + 5 * MIN), r('k105', T0 - 3 * D - 2 * H + 10 * MIN)] },
-    { so: 'GTV-0000A', xe: '118', lo: 'L05', tt: 'duyet', nguon: 'app', ht: T0 - 3 * D - 3 * H, rows: [r('k106', T0 - 3 * D - 3 * H, { daLay: true, gioLay: T0 - 4 * H, nguoiLay: 'Hoa' }), r('k107', T0 - 3 * D - 3 * H + 5 * MIN), r('k108', T0 - 3 * D - 3 * H + 10 * MIN)] },
-    { so: 'GTV-0000B', xe: '119', lo: 'L05', tt: 'duyet', nguon: 'app', ht: T0 - 3 * D - 4 * H, rows: [r('k109', T0 - 3 * D - 4 * H, { daLay: true, gioLay: T0 - 5 * H, nguoiLay: 'Hoa' }), r('k110', T0 - 3 * D - 4 * H + 5 * MIN), r('k111', T0 - 3 * D - 4 * H + 10 * MIN)] },
+    { so: 'GTV-0002', xe: '116', lo: 'L03', tt: 'duyet', nguon: 'app', ht: T0 - 3 * D - 1 * H, rows: [r('k100', T0 - 3 * D - 1 * H, { daLay: true }), r('k101', T0 - 3 * D - 1 * H + 5 * MIN), r('k102', T0 - 3 * D - 1 * H + 10 * MIN)] },
+    { so: 'GTV-0001', xe: '117', lo: 'L03', tt: 'duyet', nguon: 'app', ht: T0 - 3 * D - 2 * H, rows: [r('k103', T0 - 3 * D - 2 * H, { daLay: true }), r('k104', T0 - 3 * D - 2 * H + 5 * MIN), r('k105', T0 - 3 * D - 2 * H + 10 * MIN)] },
+    { so: 'GTV-0000A', xe: '118', lo: 'L05', tt: 'duyet', nguon: 'app', ht: T0 - 3 * D - 3 * H, rows: [r('k106', T0 - 3 * D - 3 * H, { daLay: true }), r('k107', T0 - 3 * D - 3 * H + 5 * MIN), r('k108', T0 - 3 * D - 3 * H + 10 * MIN)] },
+    { so: 'GTV-0000B', xe: '119', lo: 'L05', tt: 'duyet', nguon: 'app', ht: T0 - 3 * D - 4 * H, rows: [r('k109', T0 - 3 * D - 4 * H, { daLay: true }), r('k110', T0 - 3 * D - 4 * H + 5 * MIN), r('k111', T0 - 3 * D - 4 * H + 10 * MIN)] },
     { so: 'GTV-0015', xe: '107', lo: 'L03', tt: 'duyet', nguon: 'app', ht: T0 - 17 * H, rows: [r('k23', tB), r('k24', tB + 25 * MIN), r('k25', tA + 12 * MIN)] },
     { so: 'GTV-0016', xe: '107', lo: 'L04', tt: 'duyet', nguon: 'app', ht: T0 - 70 * MIN, rows: [r('k30', T0 - 70 * MIN)] },
     { so: 'GTV-0017', xe: '111', lo: 'L05', tt: 'duyet', nguon: 'app', ht: T0 - 5 * H, rows: [r('k40', T0 - 5 * H)] },
@@ -581,7 +581,7 @@ function seed() {
                // lượt đang mở {xe, man: 'xa' | 'ghep', start, warned:{}, ds: dòng đã vào xe trong lượt, phieu:[]}
     vuot: null,
     cay, phieu, pxk,
-    banCat: { k22: 65, k26: 20, k27: 74, k70: 70, k83: 80, k87: 50, k100: 79, k103: 80, k106: 90, k109: 85 },   // số mét đã dùng theo Bàn cắt (D7)
+    banCat: { k22: 65, k26: 20, k27: 74, k70: 70, k83: 80, k87: 50, k100: 79, k103: 80, k106: 90, k109: 85 },   // số mét đã dùng theo Bàn cắt (D6)
     log: [], sheet: null, toast: null, hit: 0, lastSeq: 0, manual: false,
   };
 }
@@ -649,7 +649,7 @@ function phieuNhap(xe, lo) {
 function themDong(c, kieu, gioGoc) {
   const p = phieuNhap(S.sess.xe, c.lo);
   const gioXa = kieu === 'Xả mới' ? now() : gioGoc;
-  const r = { cay: c.id, gioXa, daLay: false, gioLay: null, nguoiLay: null, seq: ++S.seq };
+  const r = { cay: c.id, gioXa, daLay: false, seq: ++S.seq };
   p.rows.push(r); S.lastSeq = r.seq;
   log(`${kieu} ${c.ma} · ${met(c.met)} → ${tx(S.sess.xe)} (${p.so})`);
   return { p, r };
@@ -707,19 +707,19 @@ function sangNgayKhac() { const man = S.sess && S.sess.man; if (S.sess && ngayCu
 function boXe() { log(`Bỏ ${tx(S.sess.xe)} (chưa xả cây nào)`, 'in'); S.sess = null; S.sheet = null; S.vuot = null; }
 // Quét tem xe → vào thẳng màn của xe đó, không chọn Lô (R7). man: 'xa' Xả vải · 'ghep' Ghép xe vải (R15)
 function moXe(xe, man = 'xa') { S.sess = { xe, man, start: now(), warned: {}, ds: [], phieu: [] }; log(`Mở lượt ${man === 'ghep' ? 'ghép' : 'xả'} ${tx(xe)}`, 'in'); bip(); go(man); }
-// Lấy cây: ghi Đã lấy, giờ lấy, người lấy ngay lúc chạm (R21)
+// Lấy cây: ghi Đã lấy ngay lúc chạm (R21)
 function layCay(c) {
   const l = lastRow(c.id);
   if (!online()) return;
-  l.r.daLay = true; l.r.gioLay = now(); l.r.nguoiLay = S.user.ten; S.lastSeq = l.r.seq;
+  l.r.daLay = true; S.lastSeq = l.r.seq;
   if (S.screen === 'lay-ban' && !S.params.tich.includes(c.id)) S.params.tich.push(c.id);
   log(`Lấy ${c.ma} · ${met(c.met)} khỏi ${tx(l.p.xe)}`);
   bip(); S.sheet = null;
 }
-// Bỏ tích ở bảng lấy: cây trở lại chưa lấy — bỏ Đã lấy, giờ lấy, người lấy (R19)
+// Bỏ lấy: cây trở lại chưa lấy — bỏ Đã lấy (R19)
 function boLay(c) {
   if (!online()) return;
-  const l = lastRow(c.id); l.r.daLay = false; l.r.gioLay = null; l.r.nguoiLay = null; S.lastSeq = l.r.seq;
+  const l = lastRow(c.id); l.r.daLay = false; S.lastSeq = l.r.seq;
   if (S.screen === 'lay-ban') S.params.tich = S.params.tich.filter(x => x !== c.id);
   log(`Bỏ lấy ${c.ma} (${l.p.so})`);
 }
@@ -1220,8 +1220,8 @@ function smbHtml() {
   const ps = S.phieu.slice().sort((a, b) => b.so.localeCompare(a.so));
   return `<div class="hop"><h3>Phiếu Xả vải trên SMB</h3><p class="gt">Văn phòng thấy gì sau mỗi lần công nhân bấm. Dòng vừa ghi tô xanh.</p>
   ${ps.map(p => `<div class="ph"><div class="phh"><b class="so-phieu">${p.so}</b><span>Xe <b>${esc(p.xe)}</b></span><span>${loTen(p.lo)}</span><span>Style <b>${LO[p.lo].style}</b></span><span>ĐVSX <b>${LO[p.lo].dvsx}</b></span><span>Hạch toán <b data-o="ht">${fmt(p.ht).slice(0, 5)}</b></span><span>Thời gian xả vải <b data-o="tgxa">${gio(p.ht)}</b></span><span class="nhan ${p.tt === 'nhap' ? 'p-warn' : 'p-ok'}">${p.tt === 'nhap' ? 'Nháp' : 'Đã duyệt'}</span><span class="nhan p-n">lập từ ${p.nguon === 'app' ? 'app' : 'SMB'}</span></div>
-  <div class="tbl"><table class="t"><thead><tr><th>Mã cây</th><th>Số mét</th><th>Giờ xả</th><th>Đã lấy</th><th>Giờ lấy</th><th>Người lấy</th></tr></thead><tbody>
-  ${p.rows.map(r => { const c = cayBy(r.cay); return `<tr class="${r.seq === S.lastSeq ? 'new' : ''}"><td class="m">${c.ma}</td><td>${met(c.met)}</td><td>${fmt(r.gioXa)}</td><td>${r.daLay ? '☑' : '☐'}</td><td>${r.gioLay ? fmt(r.gioLay) : ''}</td><td>${r.nguoiLay ? esc(r.nguoiLay) : ''}</td></tr>`; }).join('')}</tbody></table></div></div>`).join('')}</div>
+  <div class="tbl"><table class="t"><thead><tr><th>Mã cây</th><th>Số mét</th><th>Giờ xả</th><th>Đã lấy</th></tr></thead><tbody>
+  ${p.rows.map(r => { const c = cayBy(r.cay); return `<tr class="${r.seq === S.lastSeq ? 'new' : ''}"><td class="m">${c.ma}</td><td>${met(c.met)}</td><td>${fmt(r.gioXa)}</td><td>${r.daLay ? '☑' : '☐'}</td></tr>`; }).join('')}</tbody></table></div></div>`).join('')}</div>
   <div class="hop nk"><h3>App vừa làm gì</h3><ol>${S.log.map(x => `<li class="${x.k}"><span class="ev">${TAG[x.k]}</span><span class="mo">${esc(x.msg)}</span><time>${gio(x.t)}</time></li>`).join('') || '<li class="in"><span class="mo">Chưa có thao tác.</span></li>'}</ol></div>`;
 }
 
@@ -1350,7 +1350,7 @@ function doAct0(a, v) {
     // Màn Ghép: chạm dòng cây → ghép / bỏ ghép một cây (R15)
     case 'ghept': if (S.sess && S.screen === 'ghep' && cayBy(v)) ghepTich(v); break;
     // Nhóm Cây vải đã trải: tích chỉ để tính Thiếu và dòng Đã lấy, không ghi phiếu (R20)
-    // Tình huống thử: cây đã được Bàn cắt trước dùng một phần (số mét đã dùng, D7)
+    // Tình huống thử: cây đã được Bàn cắt trước dùng một phần (số mét đã dùng, D6)
     case 'dung': { const [id, m] = String(v).split(':'); if (cayBy(id)) S.banCat[id] = +m; break; }
     case 'tichdu': if (S.screen === 'lay-ban' && cayBy(v)) { const t = S.params.duTich = S.params.duTich || [], i = t.indexOf(v); if (i < 0) t.push(v); else t.splice(i, 1); } break;
     case 'tronok': { const sh = S.sheet; S.sess.warned[cayBy(sh.cay).lo] = true; vaoXe(cayBy(sh.cay), sh.kieu, sh.gioGoc, sh.tu); if (sh.tiep && sh.tiep.length && !S.sheet) ghepNhieu(sh.tiep); break; }
