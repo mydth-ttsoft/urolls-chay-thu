@@ -255,7 +255,7 @@ tr.new td{animation:hl 2.4s ease-out}
 .phone .hero.xe-dau.dac{-webkit-mask:none;mask:none}
 .phone .hero-body.xe-than{z-index:1;margin-top:calc(-1 * var(--r-l));border-radius:var(--r-l) var(--r-l) var(--r-xl) var(--r-xl);overflow:visible}
 .phone .hero-body.xe-than::before{content:'';position:absolute;z-index:-1;left:0;right:0;top:calc(-1 * var(--len, 0px));bottom:0;border-radius:var(--r-xl);box-shadow:var(--sh-hero);pointer-events:none}
-.phone .sect.dinh{position:sticky;top:60px;z-index:0;margin:0 calc(-1 * var(--gutter));padding:var(--s5) calc(var(--gutter) + var(--s1)) var(--s2);background:var(--bg)}
+.phone .sect.dinh{position:sticky;top:var(--dau,60px);z-index:0;margin:0 calc(-1 * var(--gutter));padding:var(--s5) calc(var(--gutter) + var(--s1)) var(--s2);background:var(--bg)}
 .phone .nhom-vai>.sect{position:sticky;top:0;z-index:1;margin:0 calc(-1 * var(--gutter));padding:var(--s5) calc(var(--gutter) + var(--s1)) var(--s2);background:var(--bg)}
 .phone .hero-body.xe-than>:first-child{border-top-left-radius:var(--r-l);border-top-right-radius:var(--r-l)}
 .phone .hero-body.xe-than>:last-child{border-bottom-left-radius:var(--r-xl);border-bottom-right-radius:var(--r-xl)}
@@ -880,7 +880,7 @@ const heroXe = (ovl, xe, n, than) => `<div class="hero" id="xe-hero"><div class=
 // Thẻ xe dính (màn xả, ghép — canvas 6c, chị HanTT 02/10): (1) kéo lên = kéo danh sách cây trong xe lên, đầu thẻ xanh đứng yên đủ cỡ,
 // các dòng cây trôi vào dưới mép trắng → thẻ ngắn dần; (2) hết danh sách: đáy thẻ kéo đầu thẻ co theo thành dải gọn 56px, nhãn · Xe 109 · N cây cùng chân chữ;
 // (3) tiêu đề nhóm (Chọn cây theo Lô / Xe còn cây) dính ngay dưới dải. Xe chưa có cây: thẻ thường, không dính
-const xeDinh = (ovl, xe, n, list) => `<div class="xe-dinh"><div class="hero xe-dau" id="xe-hero"><div class="hero-h"><span class="ovl">${ovl}</span><b class="hero-big">${tx(xe, 1)}</b><span class="pill glass"><b>${n}</b> cây</span></div></div></div>${list}`;
+const xeDinh = (ovl, xe, n, list) => `<div class="xe-dinh"><div class="hero xe-dau" id="xe-hero"><div class="hero-h"><span class="ovl">${ovl}</span><b class="hero-big">${tx(xe, 1)}</b><span class="pill glass"><b>${n}</b> cây</span></div></div>${list}</div>`;
 const pop = (icon, icls, warn, h, p, huy, ok) => `<div class="scrim" data-a="close"></div><div class="pop" role="dialog" aria-modal="true"><span class="pop-ic${warn ? ' warn' : ''}">${ic(icon, 'i-xl ' + icls, true)}</span><h3>${h}</h3>${p ? `<p>${p}</p>` : ''}<div class="btns"><button class="btn ghost" data-a="${huy[0]}">${huy[1]}</button><button class="btn" data-a="${ok[0]}">${ok[1]}</button></div></div>`;
 const TOAST_IC = { ok: 'check_circle', warn: 'warning', err: 'error' };
 // Màn quét toàn màn hình tối: đầu trang ← tên việc; khung ngắm 4 góc chiếm gần hết màn; dưới là nhãn "Quét mã vạch trên tem …" và hàng nút Bật camera sau · gõ tay.
@@ -1061,7 +1061,7 @@ function scrLayBan() {
   const lay = bb.vua.length ? `<div class="hero-body lay-ds" id="bang-lay">${bb.vua.map(({ c, l }) => dongCay({ c, xa: daXa(l.r), met: conMet(c), on: true, a: 'tich', ten: 'Bỏ lấy' })).join('')}</div>` : '';
   // đầu thẻ (Màu SP · Loại BTP · Article + Cần / Thiếu) dính đầu màn; cây đã lấy nằm liền dưới, không giới hạn số dòng, kéo lên thì trôi vào dưới đầu thẻ như màn Xả vải (d2c 04/10)
   const gon = `<div class="hero gon ban-gon" aria-hidden="true"><div class="hero-h"><span class="ovl">${thieu < 0 ? 'Thừa' : 'Thiếu'}</span><b class="hero-big">${so(Math.abs(thieu))} m</b><span class="pill glass"><b>${dm.du.length + dm.vua.length}</b> cây</span></div></div>`;
-  const hero = `<div class="stick${lay ? ' co-lay' : ''}" id="dem-ban"><div class="hero">${gon}<div class="facts" id="the-vai">${facts}</div><div class="hero-body pad">${prog}${nums}</div></div></div>${lay}<div class="tabs" role="tablist">${tb('xe', 'Cây trên xe', nXe)}${tb('du', 'Cây đã trải', nDu)}</div>`;
+  const hero = `<div class="stick${lay ? ' co-lay' : ''}" id="dem-ban"><div class="hero">${gon}<div class="facts" id="the-vai">${facts}</div><div class="hero-body pad">${prog}${nums}</div></div>${lay}</div><div class="tabs" role="tablist">${tb('xe', 'Cây trên xe', nXe)}${tb('du', 'Cây đã trải', nDu)}</div>`;
   const ghi = c => daDung(c) ? `xuất ${so(metX(c))} · dùng ${so(daDung(c))}` : '';
   const than = tab === 'du'
     ? (nDu ? `<div class="card sunk" id="khoi-du">${bb.du.map(({ c }) => dongCay({ c, met: conMet(c), on: duTich.includes(c.id), a: 'tichdu', ten: 'Dùng phần dư', them: ' data-du="1"' })).join('')}</div>`
@@ -1211,10 +1211,14 @@ function veMaVach() {
 // bố cục không đổi nên màn không giật. Đầu thẻ co theo đáy danh sách cây: cao còn lại = đáy danh sách − đỉnh đầu thẻ, tối thiểu 56px
 let CUON_K = '';
 const GON = 56;
+// Thẻ chính dính (Xả vải, Ghép xe vải, Bàn cắt — đồng bộ 04/10, chị Mydth: "cây mới nằm trên cùng thẻ lúc nào cũng nhìn thấy"):
+// khối dính = đầu thẻ + các dòng cây (mới nhất trên cùng). Kéo lên: (1) thẻ thu từ dưới lên — cây cũ nhất khuất trước, phần dưới thẻ đi lên bằng đúng phần thẻ thu;
+// (2) còn 1 dòng (cây mới nhất): đầu thẻ co thành dải gọn 56px, dòng mới nhất bám ngay dưới dải; (3) kéo tiếp: dải + dòng mới nhất đứng yên,
+// dòng tiêu đề dưới thẻ (tên Lô · Danh sách Xe cần ghép · thanh tab) dính ngay dưới.
 function doXeDinh(bd) {
   const w = bd.querySelector(':scope > .xe-dinh'); if (!w) return null;
-  const d = w.firstElementChild, l = w.nextElementSibling, h = d.querySelector('.hero-h'), o = h.querySelector('.ovl'), g = h.querySelector('.hero-big'), p = h.querySelector('.pill');
-  o.style.transform = g.style.transform = p.style.transform = '';
+  const d = w.firstElementChild, l = w.querySelector(':scope > .xe-than'), h = d.querySelector('.hero-h'), o = h.querySelector('.ovl'), g = h.querySelector('.hero-big'), p = h.querySelector('.pill');
+  o.style.transform = g.style.transform = p.style.transform = ''; w.style.clipPath = d.style.clipPath = ''; if (l) l.style.transform = '';
   const q = d.getBoundingClientRect();
   // R: khung chữ (Range) so với đầu thẻ; trình duyệt cũ / JSDOM không đo được vùng chữ → đo khung phần tử
   const R = (e, chu) => { let r; const k = chu && document.createRange(); if (k && k.getBoundingClientRect) { k.selectNodeContents(e); r = k.getBoundingClientRect(); } else r = e.getBoundingClientRect(); return { x: r.left - q.left, y: r.top - q.top, w: r.width, h: r.height }; };
@@ -1222,37 +1226,44 @@ function doXeDinh(bd) {
   const day = e => { const m = document.createElement('span'); m.style.cssText = 'display:inline-block;width:0;height:0'; e.appendChild(m); const y = m.getBoundingClientRect().bottom - q.top; m.remove(); return y; };
   const H = d.offsetHeight, W = d.offsetWidth, ro = R(o, 1), rg = R(g, 1), rp = R(p), cy = GON / 2, kg = 20 / 32, kp = .82, cp = rp.y + rp.h / 2;
   const c = { x: 16 + ro.w + 12 - rg.x, y: cy - rg.h * kg / 2 - rg.y }, B = rg.y + (day(g) - rg.y) * kg + c.y;   // B: chân chữ "Xe 109" ở dải gọn
-  const sect = bd.querySelector(':scope > .sect.dinh');
-  return { w, d, l, o, g, p, H, mt: parseFloat(getComputedStyle(l).marginTop) || 0, D: H - GON, dau: d.offsetTop, Lb: l.offsetTop + l.offsetHeight - bd.offsetTop, kg, kp, c,
-    a: { x: 16 - ro.x, y: B - day(o) }, e: { x: W - 12 - (rp.x + rp.w), y: B - (cp + (day(p) - cp) * kp) }, dinh: d.offsetTop + GON + (sect ? sect.offsetHeight : 0) };
+  return { ...doKhoi(bd, w, d, l), o, g, p, kg, kp, c, a: { x: 16 - ro.x, y: B - day(o) }, e: { x: W - 12 - (rp.x + rp.w), y: B - (cp + (day(p) - cp) * kp) } };
+}
+// Đo khối dính w (đầu thẻ d + dòng cây l) khi chưa kéo: cao cả khối, cao đầu thẻ, đáy dòng mới nhất, dòng tiêu đề dính ngay dưới
+function doKhoi(bd, w, d, l) {
+  const tw = w.getBoundingClientRect().top, r1 = l && l.firstElementChild, cs = getComputedStyle(w), duoi = bd.querySelector(':scope > .sect.dinh, :scope > .tabs');
+  return { w, d, l, Wh: w.offsetHeight, H: d.offsetHeight, D: d.offsetHeight - GON, fr: r1 ? r1.getBoundingClientRect().bottom - tw : w.offsetHeight, G: cs.paddingLeft, duoi: duoi ? duoi.offsetHeight : 0 };
+}
+// Kéo: y ≤ p1 → thẻ thu từ dưới; sau đó đầu thẻ co (d tới D), dòng cây dời lên theo; vb = mép dưới phần thẻ còn thấy
+function cuonKhoi(bd, M) {
+  const y = bd.scrollTop, p1 = Math.max(0, M.Wh - M.fr), dd = Math.max(0, Math.min(y - p1, M.D)), t = M.D > 0 ? dd / M.D : 0, vb = y <= p1 ? M.Wh - y : M.fr - dd;
+  M.w.style.setProperty('--t', t.toFixed(3));
+  if (M.l) M.l.style.transform = dd ? `translateY(${-dd}px)` : '';
+  M.w.style.clipPath = vb < M.Wh ? `inset(0 ${M.G} ${M.Wh - vb}px ${M.G} round 0 0 24px 24px)` : '';
+  M.w.style.setProperty('--nen', vb + 'px');
+  bd.style.setProperty('--dau', vb + 'px'); bd.style.setProperty('--dinh', vb + M.duoi + 'px');
+  return { dd, t };
 }
 function cuonXeDinh(bd, M) {
-  const Hv = Math.max(GON, Math.min(M.H, M.Lb - bd.scrollTop - M.dau)), cc = M.H - Hv, t = cc / M.D, r = 24 - 4 * t, bt = cc > 0 ? r : 0;
-  M.w.style.setProperty('--t', t);
+  const { dd, t } = cuonKhoi(bd, M), r = 24 - 4 * t, bt = dd > 0 ? r : 0;
   M.o.style.transform = `translate(${M.a.x * t}px,${M.a.y * t}px)`;
   M.g.style.transform = `translate(${M.c.x * Math.min(1, t / .4)}px,${M.c.y * t}px) scale(${1 + (M.kg - 1) * t})`;   // sang ngang nhanh hơn đi lên: không đè nhãn
   M.p.style.transform = `translate(${M.e.x * t}px,${M.e.y * t}px) scale(${1 + (M.kp - 1) * t})`;
-  M.d.style.clipPath = `inset(0 0 ${cc}px 0 round ${r}px ${r}px ${bt}px ${bt}px)`;
-  M.d.classList.toggle('dac', cc > 0);                                           // đang co: đáy phần xanh đặc, không lộ đáy bo của phần trắng
-  M.w.style.setProperty('--nen', (M.dau + (cc > 0 ? Hv : M.H - 20)) + 'px');     // nền màn sau đầu thẻ tới đáy phần xanh đang hiện
-  // bóng danh sách bắt đầu từ mép dưới phần xanh đang hiện (như lúc chưa kéo): danh sách trôi lên dưới đầu thẻ thì bóng không lòi ra hai bên đầu thẻ; lúc co thành dải gọn thì đỉnh bóng lên dần theo t tới đỉnh dải
-  M.l.style.setProperty('--len', -Math.max(0, M.d.getBoundingClientRect().top + (Hv + M.mt) * (1 - t) - M.l.getBoundingClientRect().top) + 'px');
+  M.d.style.clipPath = dd > 0 ? `inset(0 0 ${dd}px 0 round ${r}px ${r}px ${bt}px ${bt}px)` : '';
+  M.d.classList.toggle('dac', dd > 0);                                           // đang co: đáy phần xanh đặc, không lộ đáy bo của phần trắng
 }
 let XD = null;
 function datDinh(bd, doLai) {
-  const st = bd.querySelector(':scope > .stick');
-  // Màn Bàn cắt: kéo lên thì thẻ Bàn cắt co dần thành dải gọn 56px (Thiếu · số mét · số cây), như thẻ xe ở màn Xả vải; thanh tab và nhãn xe dính theo mép dưới dải (đồng bộ 04/10)
-  if (st) {
-    const tb = bd.querySelector(':scope > .tabs'), H = st.offsetHeight, cs = getComputedStyle(st), MIN = parseFloat(cs.paddingTop) + GON, G = cs.paddingLeft;
-    // như màn Xả vải: kéo lên thì cây đã lấy trôi vào dưới thẻ trước (thẻ đứng yên đủ cỡ), hết dòng cây thì thẻ mới co theo
-    const lay = bd.querySelector(':scope > .lay-ds'), day = lay ? lay.getBoundingClientRect().bottom - bd.getBoundingClientRect().top + bd.scrollTop : H;
-    const Hv = Math.max(MIN, Math.min(H, day - bd.scrollTop)), cc = H - Hv, t = H > MIN ? cc / (H - MIN) : 0;
-    st.style.clipPath = cc > 0 ? `inset(0 ${G} ${cc}px ${G} round 0 0 24px 24px)` : '';
-    st.style.setProperty('--t', t.toFixed(3));
-    bd.style.setProperty('--dau', Hv + 'px'); bd.style.setProperty('--dinh', Hv + (tb ? tb.offsetHeight : 0) + 'px'); return;
+  if (doLai || !XD || XD.bd !== bd) {
+    const st = bd.querySelector(':scope > .stick');
+    // Bàn cắt: đầu thẻ là thẻ đếm (ba khung + Cần / Thiếu); co lại thì dải "Thiếu · số mét · số cây" hiện dần (CSS theo --t)
+    let M = null;
+    if (st) { const d = st.querySelector(':scope > .hero'), l = st.querySelector(':scope > .lay-ds'); st.style.clipPath = d.style.clipPath = ''; if (l) l.style.transform = ''; M = { ...doKhoi(bd, st, d, l), ban: true }; }
+    else M = doXeDinh(bd);
+    XD = M && { bd, M };
   }
-  if (doLai || !XD || XD.bd !== bd) { const M = doXeDinh(bd); XD = M && { bd, M }; if (M) bd.style.setProperty('--dinh', M.dinh + 'px'); }
-  if (XD) cuonXeDinh(bd, XD.M);
+  if (!XD) return;
+  if (XD.M.ban) { const { dd } = cuonKhoi(bd, XD.M); XD.M.d.style.clipPath = dd > 0 ? `inset(0 0 ${dd}px 0)` : ''; }
+  else cuonXeDinh(bd, XD.M);
 }
 document.addEventListener('scroll', e => { const bd = e.target; if (bd.classList && bd.classList.contains('body') && bd.closest('#man')) datDinh(bd); }, true);
 // font về muộn hoặc đổi cỡ cửa sổ thì chữ đổi kích thước → đo lại
