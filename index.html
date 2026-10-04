@@ -142,11 +142,15 @@ tr.new td{animation:hl 2.4s ease-out}
 .phone .tim-o input::-webkit-search-cancel-button{display:none}
 .phone .tim-xoa{border:none;background:none;cursor:pointer;padding:4px}
 /* d2c #73: ở màn Ghép khung tìm nhỏ, nằm cùng dòng bên phải chữ Danh sách Xe cần ghép (⑰) */
-.phone .tim-o.nho{flex:0 1 170px;min-width:0;height:36px;margin:0;padding:0 var(--s2);gap:var(--s1);border-radius:var(--r-pill)}
+.phone .tim-o.nho{flex:0 0 124px;min-width:0;height:36px;margin:0;padding:0 var(--s2);gap:var(--s1);border-radius:var(--r-pill)}
 .phone .tim-o.nho input{font-size:var(--t-body)}
+.phone .tim-o.nho input::placeholder{font-size:var(--t-cap)}
+.phone .sect:has(>.tim-o.nho){gap:var(--s2);font-size:var(--t-body)}   /* tiêu đề cạnh ô tìm 15px như đầu nhóm Lot / đầu thẻ xe, đủ chỗ ghi Lô · Article · Màu vải */   /* chữ mờ ghi thứ tìm được, vừa ô ở mọi màn (đồng bộ 04/10) */
 /* #67: tên dòng Lô · Article · Màu co lại (…) để khung tìm luôn nằm trọn trong màn */
 .phone #sect-lo span{min-width:0;overflow:hidden;text-overflow:ellipsis}
-.phone #sect-lo .tim-o{flex:0 1 150px}
+/* dòng Lô cạnh ô tìm hai tầng như dòng ở Danh sách Lô hàng: Lô đậm trên, Article · Màu vải chữ nhỏ dưới (đồng bộ 04/10) */
+.phone #sect-lo span b,.phone #sect-lo span small{display:block;overflow:hidden;text-overflow:ellipsis}
+.phone #sect-lo span small{margin-top:2px;font-size:var(--t-cap);font-weight:600;color:var(--ink-3)}
 /* d2c ⑩: hai nút trên đầu màn xe (Đổi Lô hàng + Đổi xe / Kết thúc xe) */
 .phone .nut2{display:flex;gap:6px;flex:none}
 .phone .sect{display:flex;align-items:center;justify-content:space-between;gap:var(--s3);min-height:32px;margin:var(--s5) var(--s1) var(--s2);font-size:var(--t-row);font-weight:800;white-space:nowrap}
@@ -955,14 +959,14 @@ function scrXaLo() {
 function scrXa() {
   const s = S.sess, c = S.chon;
   // d2c ⑪⑫: dòng tên Lô có khung tìm nhỏ bên phải, không chiếm dòng riêng; ⑩ nút Đổi Lô hàng nằm trên đầu màn
-  const dau = c ? `<div class="sect${s.ds.length ? ' dinh' : ''}" id="sect-lo"><span>${LO[c.lo].lo} · ${mauArt(c.vai)}</span>${khungTim('Tìm kiếm', true)}</div>` : '';
+  const dau = c ? `<div class="sect${s.ds.length ? ' dinh' : ''}" id="sect-lo"><span><b>${LO[c.lo].lo}</b><small>${mauArt(c.vai)}</small></span>${khungTim('Lot, Cây vải', true)}</div>` : '';
   return `<div class="scr">${bar('home', 'Xả vải', '', `<span class="nut2">${nutBar('doilo', 'Đổi Lô hàng')}${nutXe(s)}</span>`)}<div class="body" id="ds-xa">${s.ds.length ? '' : '<div class="hero-gap"></div>'}${bangLuot(s)}${dau}${c ? dsCay(c.lo, c.vai) : ''}</div></div>`;
 }
 // Chọn cây của một Lô: cây chờ xả của Lô (R8), nhóm theo màu · mã vải (tiêu đề dính đầu vùng cuộn tới hết nhóm) rồi theo Lot, trong Lot xếp theo mã cây; chạm dòng là cây vào xe.
 // Đầu nhóm Lot (cùng nền thẻ, chữ xám) bấm để thu / bung nhóm; mặc định bung hết.
 // Góc phải đầu màn: viên số cây trên xe (XE 109 • 2 cây), đổi số thì nảy lên để người chạm thấy cây đã vào xe
 // Khung tìm kính lúp dùng chung cho màn chọn cây (#68) và màn Ghép (#69): gõ là lọc ngay, X xoá chữ
-// chữ mờ chung "Tìm kiếm" cho mọi ô tìm (đồng bộ 04/10); tìm theo gì ghi ở URD R8, R15
+// ô tìm: kính lúp + chữ mờ ghi đúng thứ tìm được ở màn đó (Xả vải: Lot, Cây vải · Ghép: Xe, Cây vải) — d2c 04/10
 const khungTim = (goi, nho) => `<label class="tim-o${nho ? ' nho' : ''}">${ic('search', 'i-m c-3')}<input id="tim-cay" type="search" placeholder="${goi}" value="${esc(S.params.tim || '')}" autocomplete="off" aria-label="${goi}">${(S.params.tim || '').trim() ? `<button class="tim-xoa" data-a="timxoa" aria-label="Xoá chữ tìm">${ic('close', 'i-s c-3')}</button>` : ''}</label>`;
 const MAN_TIM = ['xa', 'ghep'];
 // Cây chờ xả của dòng Lô · Màu · Article (R8): khung tìm (#68) + nhóm theo Lot, trong Lot xếp theo mã cây; chạm dòng là cây vào xe.
@@ -1053,7 +1057,7 @@ function scrGhep() {
   const ds = khac.length ? `<div id="bang-ghep">${khac.map(n => theXe(n.xe, false, `ghép cả ${tenXe(n.xe)} sang ${tx(s.xe)}`,
     n.ds.map(({ c, l }) => dongCay({ c, xa: daXa(l.r), met: metX(c), a: 'ghept', ten: 'Ghép' })).join(''), n.ds.length, n.ds.reduce((t, { c }) => t + metX(c), 0), !tim && (khac.length > 1) !== (S.params.mo || []).includes(n.xe))).join('')}</div>` : `<p class="note">${tim ? `Không có xe khớp “${esc(S.params.tim.trim())}”.` : 'Không có xe nào đang lấy dở.'}</p>`;
   return `<div class="scr">${bar('home', 'Ghép xe vải', '', nutXe(s))}<div class="body" id="ds-ghep">${dau}
-  <div class="sect${dich.length ? ' dinh' : ''}" id="sect-xe"><span>Danh sách Xe cần ghép</span>${tatCa.length ? khungTim('Tìm kiếm', true) : ''}</div>${ds}</div></div>`;
+  <div class="sect${dich.length ? ' dinh' : ''}" id="sect-xe"><span>Danh sách Xe cần ghép</span>${tatCa.length ? khungTim('Xe, Cây vải', true) : ''}</div>${ds}</div></div>`;
 }
 // Ghép nhiều cây (tích ô dòng xe): cây Lô khác → hỏi như R11; trả lời Thêm vào xe thì ghép tiếp số còn lại
 function ghepNhieu(ids) {
