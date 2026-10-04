@@ -1319,9 +1319,11 @@ function render() {
 // Mở app sau khi thoát: chưa đăng nhập → đăng nhập; lượt còn mở (vì mất mạng lúc thoát) → vào lại, trừ khi đã sang ngày khác
 function moLai() {
   if (!S.user) go('login');
-  else if (S.sess) { go(S.sess.man); if (!sangNgayKhac() && S.baoMoLai) toast('err', S.baoMoLai); }   // vào lại lượt trước, rồi mới xét sang ngày / báo mất mạng (báo đỏ không bị go() xoá)
+  // Còn lượt mở = lúc thoát app bị mất mạng nên chưa kết thúc được (R6). Mở lại app thì xét mạng lúc này:
+  // có mạng → kết thúc nốt lượt như R13, về màn như bấm Kết thúc xe; vẫn mất mạng → vào lại đúng lượt đó, báo đỏ
+  else if (S.sess) { const man = S.sess.man; if (!S.offline) { if (tuKetThuc('thoát app')) go(manSauLuot(man)); } else { go(man); toast('err', 'Mất mạng, chưa ghi — lượt xả chưa kết thúc được.'); } }
   else go(S.sauThoat || 'home');
-  S.sauThoat = null; S.baoMoLai = null;
+  S.sauThoat = null;
 }
 function dangNhap(tk) { S.user = { tk, ten: 'Trần Văn Bình' }; log('Đăng nhập ' + tk, 'in'); go('home'); }
 function doAct(a, v) {
@@ -1382,12 +1384,12 @@ function doAct0(a, v) {
       if (sh && sh.kind === 'tronlo' && trangThai(sh.cay) === 'chua') cayBy(sh.cay).lo = null; break; }   // Huỷ xả mới: cây chưa vào xe, bỏ Lô đã nhận
     case 'clock': S.offset += (+v) * MIN; log(`Tua giờ +${+v >= 1440 ? (+v / 1440) + ' ngày' : (+v / 60) + ' giờ'}`, 'in'); break;
     // Có mạng lại: báo mất mạng tự tắt, màn tự tải lại dữ liệu mới (không cần bấm gì)
-    case 'net': S.offline = !S.offline; log(S.offline ? 'Mất mạng' : 'Có mạng lại — màn tự tải lại', 'in'); if (!S.offline) sangNgayKhac(); break;   // có mạng lại: lượt của ngày trước tự kết thúc (R6)
+    case 'net': S.offline = !S.offline; log(S.offline ? 'Mất mạng' : 'Có mạng lại — màn tự tải lại', 'in'); if (!S.offline && !S.appOff) sangNgayKhac(); break;   // có mạng lại: lượt của ngày trước tự kết thúc (R6)
     // Tắt màn hình / chuyển app khác: giữ nguyên xe đang mở (R6)
     case 'mantat': if (S.appOff) break; if (S.manTat) { S.manTat = false; log('Bật màn hình', 'in'); sangNgayKhac(); } else { S.manTat = true; S.sheet = null; log('Tắt màn hình', 'in'); } break;
     // Thoát app: lượt đang mở tự kết thúc (R6); mở lại → màn quét xe
     case 'thoat': if (S.appOff) { S.appOff = false; log('Mở lại app', 'in'); moLai(); }
-      else { S.manTat = false; log('Thoát app', 'in'); const co = !!S.sess, man = co && S.sess.man; if (co && !tuKetThuc('thoát app')) S.baoMoLai = 'Mất mạng, chưa ghi — lượt xả chưa kết thúc được.'; S.sauThoat = co && !S.sess ? manSauLuot(man) : null; S.appOff = true; S.sheet = null; } break;
+      else { S.manTat = false; log('Thoát app', 'in'); const co = !!S.sess, man = co && S.sess.man; if (co) tuKetThuc('thoát app'); S.sauThoat = co && !S.sess ? manSauLuot(man) : null; S.appOff = true; S.sheet = null; } break;
     // Sáng hôm sau: tua tới 07:00 ngày kế tiếp rồi mở app (R6: mở app sang ngày khác)
     case 'homsau': { const d = new Date(now()); S.offset += new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1, 7, 0).getTime() - now(); log('Sang 07:00 ngày hôm sau', 'in');
       S.manTat = false; if (S.appOff) { S.appOff = false; moLai(); } else sangNgayKhac(); break; }
