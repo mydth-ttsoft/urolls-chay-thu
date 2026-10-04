@@ -260,7 +260,7 @@ tr.new td{animation:hl 2.4s ease-out}
 .phone .hero-big{font-size:var(--t-big);font-weight:800;letter-spacing:-.5px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .phone .hero-body{position:relative;background:var(--raise);color:var(--ink);border-radius:var(--r-l) var(--r-l) 0 0;overflow:hidden}
 .phone .hero-body>.prog{position:absolute;bottom:0;left:40px;right:40px;height:5px;border-radius:3px 3px 0 0}
-.phone .hero-body .row+.row,.phone .hero-body .sw+.sw{box-shadow:inset 0 1px 0 var(--raise-line)}
+.phone .hero-body .row+.row{box-shadow:inset 0 1px 0 var(--raise-line)}
 .phone .hero-body.pad{padding:var(--s5) var(--pad) var(--s5)}
 .phone .hero-body.lay-ds{border-radius:0;max-height:171px;overflow-y:auto;box-shadow:inset 0 1px 0 var(--raise-line)}
 .phone .hero-empty{margin:0;padding:var(--s4);text-align:center;font-size:var(--t-cap);font-weight:600;color:var(--hero-ink-2)}
@@ -297,10 +297,6 @@ tr.new td{animation:hl 2.4s ease-out}
 .phone .bdg{font-weight:700;color:inherit}
 .phone .stick:has(>.tabs){padding-bottom:var(--s5)}
 .phone .tab-body{margin-top:0}
-.phone .sw{position:relative;overflow:hidden}
-.phone .sw+.sw{box-shadow:inset 0 1px 0 var(--line)}
-.phone .sw-xoa{position:absolute;z-index:2;top:0;right:0;bottom:0;width:76px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:none;background:var(--danger-fill);color:#fff;font-size:var(--t-cap);font-weight:800;transform:translateX(100%);transition:transform .18s}
-.phone .sw.mo .sw-xoa{transform:none}
 .phone .scrim{position:absolute;inset:0;z-index:20;background:var(--scrim)}
 .phone .pop{position:absolute;z-index:21;left:var(--s4);right:var(--s4);top:50%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:center;gap:var(--s2);padding:var(--s6) var(--s5) var(--s5);border-radius:var(--r-xl);background:var(--card);border:1px solid var(--card-bd);text-align:center;box-shadow:var(--sh-pop)}
 .phone .pop h3{margin:var(--s1) 0 0;font-size:var(--t-num);font-weight:800;line-height:1.3}
@@ -381,7 +377,7 @@ tr.new td{animation:hl 2.4s ease-out}
 @keyframes dem-nay{0%{transform:scale(1)}40%{transform:scale(1.18)}100%{transform:scale(1)}}
 @keyframes ngan-vao{from{transform:translateX(-100%)}to{transform:none}}
 /* ----- hết khối sinh từ canvas ----- */
-/* Chỉ bản chạy thử: camera thật, vạch quét, ô gõ tay, chờ camera, vuốt dòng, màn tắt */
+/* Chỉ bản chạy thử: camera thật, vạch quét, ô gõ tay, chờ camera, màn tắt */
 .phone .hero-gap{height:var(--s1)}
 #camvid{position:absolute;z-index:1;object-fit:cover;display:none;pointer-events:none;background:#0B1220}
 .phone .cam{position:relative;background:#0B1220;overflow:hidden}.phone .cam.song{background:transparent}
@@ -404,10 +400,6 @@ tr.new td{animation:hl 2.4s ease-out}
 .phone .kp-luoi button.xoa{color:var(--danger)}
 .phone .kp-luu{width:100%;height:50px;border:none;border-radius:12px;background:#16A34A;color:#fff;font-size:15px;font-weight:800;letter-spacing:.5px;cursor:pointer}
 .phone .sr{position:absolute;left:-9999px}
-/* vuốt dòng sang trái: dòng đứng yên, nút Xoá trượt vào từ mép phải, che cột số mét; mã cây · Lot · Lô vẫn đọc được (R12) */
-.phone .sw .sw-in{background:var(--raise);touch-action:pan-y;cursor:grab;user-select:none}
-.phone .sw+.sw .sw-in{box-shadow:inset 0 1px 0 var(--raise-line)}
-.phone .sw-xoa.keo{transition:none}
 .phone .xe-nhan{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;touch-action:manipulation}
 .phone .xe-nhan.giu .tag{background:var(--sel-line)}
 .phone .tat{align-items:center;justify-content:center;background:#0B1220;color:#94A3B8;font-size:var(--t-cap)}
@@ -533,7 +525,7 @@ function seed() {
     user: null, screen: 'login', params: {},
     sess: null, chon: null,   // chon: dòng Lô · Màu · Article đang chọn ở Xả vải {lo, vai} (#67)
                // lượt đang mở {xe, man: 'xa' | 'ghep', start, warned:{}, ds: dòng đã vào xe trong lượt, phieu:[]}
-    vuot: null,            // seq của dòng đang vuốt mở nút Xoá
+    vuot: null,
     cay, phieu, pxk,
     banCat: { k22: 65, k26: 20, k27: 74 },   // số mét đã dùng theo Bàn cắt (D7)
     log: [], sheet: null, toast: null, hit: 0, lastSeq: 0, manual: false,
@@ -619,7 +611,7 @@ function vaoXe(c, kieu = 'Xả mới', gioGoc = null, tu = null) {
   S.sess.ds.push({ seq: r.seq, cay: c.id, tu });
   bip(); S.sheet = null;
 }
-// Xoá một dòng của lượt (vuốt trái → Xoá, hoặc bỏ tích ở màn Ghép): bỏ dòng khỏi phiếu nháp, phiếu nháp rỗng thì bỏ luôn (R12); cây về chỗ cũ
+// Xoá một dòng của lượt (chạm vòng check của dòng trong thẻ xe, ở màn Xả vải và màn Ghép): bỏ dòng khỏi phiếu nháp, phiếu nháp rỗng thì bỏ luôn (R12); cây về chỗ cũ
 function xoaDong(seq) {
   if (!S.sess || !online()) return;
   const i = S.sess.ds.findIndex(x => x.seq === seq); if (i < 0) return;
@@ -934,12 +926,12 @@ function scrGhepXe() {
 }
 const nutXe = s => s.ds.length ? nutBar('ketthuc', 'Kết thúc xe') : nutBar('boxe', 'Đổi xe');
 const so = x => String(x).replace('.', ',');
-// Thẻ lớn của xe: số xe to, số cây; các cây đã vào xe trong lượt xả nằm trong thẻ, mới nhất trên cùng — dòng hai tầng: mã cây · số mét / Lot · Lô; vuốt dòng sang trái → Xoá (R7, R12)
+// Thẻ lớn của xe: số xe to, số cây; các cây đã vào xe trong lượt xả nằm trong thẻ, mới nhất trên cùng — dòng hai tầng: mã cây · số mét / Lot · Lô; vòng check cuối dòng, chạm = bỏ cây khỏi xe (R7, R12; đồng bộ Xả · Bàn cắt · Ghép, d2c 04/10)
 function bangLuot(s) {
   const ds = s.ds.slice().reverse();
   if (!ds.length) return heroXe('Đã xả vào', s.xe, 0, '<p class="hero-empty">Chưa có cây.</p>');
   return xeDinh('Đã xả vào', s.xe, ds.length, `<div class="hero-body xe-than" id="bang-luot">${ds.map(e => { const c = cayBy(e.cay);
-    return `<div class="sw${S.vuot === String(e.seq) ? ' mo' : ''}" data-sw="${e.seq}">${dongCay({ c, lo: LO[c.lo].lo, met: c.met, lop: ' sw-in' })}<button class="sw-xoa" data-a="xoa" data-v="${e.seq}" aria-label="Xoá ${esc(c.ma)}">${ic('delete', 'i-m')}Xoá</button></div>`; }).join('')}</div>`);
+    return dongCay({ c, lo: LO[c.lo].lo, met: c.met, on: true, a: 'xoacay', ten: 'Bỏ khỏi xe' }); }).join('')}</div>`);
 }
 // Đội xả làm theo Lô và Màu: mỗi dòng một Lô · Màu · Article của phiếu xuất kho chưa duyệt, kèm số cây chờ xả (R8). Dòng không còn cây khớp thì không có
 function dsLo() { const ds = []; for (const lo of Object.keys(LO)) for (const vai of new Set(S.pxk.filter(p => p.lo === lo && !p.duyet).flatMap(p => p.vai))) { const n = choLo(lo, vai).length; if (n) ds.push({ lo, vai, n }); }
@@ -1026,8 +1018,8 @@ function scrLayBan() {
   const prog = tt ? '' : `<div class="prog"><i style="width:${pct}%"></i></div>`;
   const nXe = bb.xe.reduce((t, n) => t + n.ds.length, 0), nDu = bb.du.length;
   const tb = (k, ten, n) => `<button role="tab" aria-selected="${tab === k}" data-a="tab" data-v="${k}"><span class="lb">${ten}<span class="bdg">· ${n}</span></span></button>`;
-  // d2c ①②③ 04/10: cây đã lấy cho bàn nằm trong thẻ Bàn cắt (như cây đã xả trong thẻ xe ở màn Xả vải), không có nút tích; vuốt trái → Xoá = bỏ lấy, cây về xe (R19)
-  const lay = bb.vua.length ? `<div class="hero-body lay-ds" id="bang-lay">${bb.vua.map(({ c, l }) => `<div class="sw${S.vuot === 'L' + c.id ? ' mo' : ''}" data-sw="L${c.id}">${dongCay({ c, xa: daXa(l.r), met: conMet(c), lop: ' sw-in' })}<button class="sw-xoa" data-a="tich" data-v="${c.id}" aria-label="Bỏ lấy ${esc(c.ma)}">${ic('delete', 'i-m')}Xoá</button></div>`).join('')}</div>` : '';
+  // d2c ①②③ 04/10: cây đã lấy cho bàn nằm trong thẻ Bàn cắt (như cây đã xả trong thẻ xe ở màn Xả vải), vòng check cuối dòng, chạm = bỏ lấy, cây về xe (R19; đồng bộ Xả · Bàn cắt · Ghép, d2c 04/10)
+  const lay = bb.vua.length ? `<div class="hero-body lay-ds" id="bang-lay">${bb.vua.map(({ c, l }) => dongCay({ c, xa: daXa(l.r), met: conMet(c), on: true, a: 'tich', ten: 'Bỏ lấy' })).join('')}</div>` : '';
   const hero = `<div class="stick" id="dem-ban"><div class="hero"><div class="facts" id="the-vai">${facts}</div><div class="hero-body pad">${prog}${nums}</div>${lay}</div><div class="tabs" role="tablist">${tb('xe', 'Cây trên xe', nXe)}${tb('du', 'Cây đã trải', nDu)}</div></div>`;
   const ghi = c => daDung(c) ? `xuất ${so(metX(c))} · dùng ${so(daDung(c))}` : '';
   const than = tab === 'du'
@@ -1119,7 +1111,7 @@ const KICHBAN = [
   { t: 'Xả một xe từ đầu', d: 'Bấm Xả vải → chạm Lô 03 · Navy · CT32S-NV → quét xe 109: khung camera ẩn, hiện ngay cây Lô 03. Chạm C-0801, C-0802: mỗi cây một dòng trong bảng, Lô tự điền theo dòng đã chọn. Bảng SMB: phiếu nháp mới của lượt; phiếu nháp GTV-0012 văn phòng lập không thêm dòng.', b: [['go', 'xa'], ['chonlo', 'L03|CT32-NV'], ['scan', '109'], ...CHAM2] },
   { t: 'Danh sách chỉ có cây chờ xả', d: 'Ở màn xả xe 109 chạm Lô 03: không có C-0807 (đã ở xe 109), C-0840 (đang ở xe 107), C-0799 (đã lấy ra trải). Lô 05 không có C-0999 (Poly Navy chỉ có trên phiếu xuất kho PX-0931 đã duyệt).', b: [['go', 'xa'], ['chonlo', 'L03|CT32-NV'], ['scan', '109'], ['chonlo', 'L03|CT32-NV']] },
   { t: 'Hai Lô chung một xe', d: 'Xe 109 đang chứa Lô 03, bấm Đổi Lô hàng → chạm Lô 04 → chạm C-0902 → app hỏi trước khi ghi. Bấm Thêm vào xe: Lô 04 có phiếu riêng.', b: [['go', 'xa'], ['chonlo', 'L03|CT32-NV'], ['scan', '109'], ['chonlo', 'L03|CT32-NV'], ['cham', 'k1'], ['go', 'xa'], ['chonlo', 'L04|KT-WH'], ['cham', 'k31']] },
-  { t: 'Xoá dòng', d: 'Vuốt dòng C-0802 sang trái → bấm Xoá: dòng mất khỏi bảng và khỏi phiếu nháp trên SMB, cây về lại danh sách cây của Lô. Xoá được tới lúc Kết thúc xe.', b: [['go', 'xa'], ['chonlo', 'L03|CT32-NV'], ['scan', '109'], ...CHAM2] },
+  { t: 'Bỏ cây khỏi xe', d: 'Chạm vòng check ở dòng C-0802 trong thẻ xe 109: dòng mất khỏi bảng và khỏi phiếu nháp trên SMB, cây về lại danh sách cây của Lô. Xoá được tới lúc Kết thúc xe.', b: [['go', 'xa'], ['chonlo', 'L03|CT32-NV'], ['scan', '109'], ...CHAM2] },
   { t: 'Ghép xe vải', d: 'Gom cây về xe 109: thẻ lớn là xe 109 (cây sẵn có chữ mờ, chỉ để xem), dưới là Xe còn cây (xe 103). Chạm dòng C-0790 → sang xe 109 ngay, giờ xả giữ nguyên; chạm lại → về xe 103. Bấm giữ nhãn Xe 103 → cả xe sang.', b: [['go', 'ghep-xe'], ['scan', '109'], ['ghept', 'k20']] },
   { t: 'Tem sai', d: 'Màn quét xe chỉ nhận tem xe 101–500: tem 650 và tem bàn cắt 1234 → báo đỏ, không mở xe.', b: [['go', 'xa'], ['chonlo', 'L03|CT32-NV'], ['scan', '650'], ['scan', '1234']] },
   { t: 'Kết thúc xe', d: 'Xả xe 109 được 2 cây, bấm Kết thúc xe → hỏi. Bấm Kết thúc: phiếu của lượt Đã duyệt, phiếu nháp văn phòng GTV-0012 vẫn Nháp; app về danh sách Lô · Màu · Article.', b: [['go', 'xa'], ['chonlo', 'L03|CT32-NV'], ['scan', '109'], ...CHAM2, ['ketthuc']] },
@@ -1270,7 +1262,7 @@ function doAct(a, v) {
     case 'dung': { const [id, m] = String(v).split(':'); if (cayBy(id)) S.banCat[id] = +m; break; }
     case 'tichdu': if (S.screen === 'lay-ban' && cayBy(v)) { const t = S.params.duTich = S.params.duTich || [], i = t.indexOf(v); if (i < 0) t.push(v); else t.splice(i, 1); } break;
     case 'tronok': { const sh = S.sheet; S.sess.warned[cayBy(sh.cay).lo] = true; vaoXe(cayBy(sh.cay), sh.kieu, sh.gioGoc, sh.tu); if (sh.tiep && sh.tiep.length && !S.sheet) ghepNhieu(sh.tiep); break; }
-    case 'xoa': xoaDong(+v); break;
+    case 'xoacay': if (S.sess && S.screen === 'xa') { const e = S.sess.ds.find(x => x.cay === v && !x.tu); if (e) xoaDong(e.seq); } break;
     case 'ketthuc': S.sheet = { kind: 'ketthuc' }; break;
     case 'ketthucok': ketThuc(); break;
     // Ô tích ở bảng lấy: tích = lấy (hỏi trước nếu chưa đủ ngày xả), bỏ tích = trả về chưa lấy (R19)
@@ -1310,7 +1302,6 @@ document.addEventListener('click', e => {
   moLoa();
   const el = e.target.closest('[data-a]');
   // chạm ra ngoài dòng đang mở nút Xoá → đóng lại
-  if (S.vuot != null && !e.target.closest('.sw')) { S.vuot = null; if (!el) { render(); return; } }
   const giu = e.target.closest('[data-giu]');
   if (giu && !el) {
     if (Date.now() - GIU_LUC < 800) return;                     // nhả tay sau khi giữ đủ: đã làm rồi
@@ -1319,6 +1310,9 @@ document.addEventListener('click', e => {
     else toast('warn', 'Bấm giữ nhãn xe để lấy cả xe.');
     render(); return;
   }
+  // Lấy vải, Ghép: chạm vào thẻ xe (ngoài dòng cây) = bung / thu xe như chạm nhãn (d2c 04/10)
+  const the = !el && (S.screen === 'ghep' || S.screen === 'lay-ban') && e.target.closest('.card.xe');
+  if (the) { const mo = S.params.mo = S.params.mo || [], i = mo.indexOf(the.dataset.xe); if (i < 0) mo.push(the.dataset.xe); else mo.splice(i, 1); render(); return; }
   if (!el) return;
   if (el.tagName === 'BUTTON' && el.getAttribute('type') === 'submit') return;
   if (el.dataset.a === 'scan' && S.user && !S.appOff && !S.manTat) pip();
@@ -1339,19 +1333,6 @@ document.addEventListener('submit', e => {
   else if (f === 'go') { const v = document.getElementById('gotay').value; doAct('scan', v); render(); const g = document.getElementById('gotay'); g.value = ''; g.focus(); return; }
   render();
 });
-// Vuốt dòng bảng sang trái ≥ 60 px → mở nút Xoá; vuốt phải hoặc chạm lại dòng đang mở → đóng (R12).
-// Dùng pointer events nên chạy được cả ngón tay lẫn chuột; dòng đứng yên, nút Xoá theo ngón tay trượt vào từ mép phải, che cột số mét
-let KEO = null;
-const XOA_W = 76;
-document.addEventListener('pointerdown', e => { const r = e.target.closest && e.target.closest('.sw-in'); KEO = r ? { r: r.parentNode.querySelector('.sw-xoa'), x0: e.clientX, dx: 0, seq: r.parentNode.dataset.sw } : null; if (KEO) KEO.r.classList.add('keo'); });
-document.addEventListener('pointermove', e => { if (!KEO) return; KEO.dx = e.clientX - KEO.x0; const goc = S.vuot === KEO.seq ? 0 : XOA_W; KEO.r.style.transform = `translateX(${Math.max(0, Math.min(XOA_W, goc + KEO.dx))}px)`; });
-function thaKeo() {
-  if (!KEO) return; const k = KEO, truoc = S.vuot; KEO = null; k.r.classList.remove('keo'); k.r.style.transform = '';
-  if (k.dx <= -60) S.vuot = k.seq; else if (k.dx >= 60 || (Math.abs(k.dx) < 10 && S.vuot === k.seq)) S.vuot = null;
-  if (S.vuot !== truoc) render();
-}
-document.addEventListener('pointerup', thaKeo);
-document.addEventListener('pointercancel', thaKeo);
 // Bấm giữ nhãn xe ≥ 0,5 giây → lấy / ghép cả xe (R15, R19, CR-003). Chạm nhanh chỉ nhắc; trượt ngón (cuộn) thì huỷ.
 // Bàn phím (Enter / Space trên nhãn) không giữ được → làm luôn
 let GIU = null, GIU_LUC = 0;
