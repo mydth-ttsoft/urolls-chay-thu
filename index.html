@@ -890,10 +890,10 @@ const lotNgan = lot => { const t = String(lot); return t.length > 12 ? t.slice(0
 const xaHtml = xa => `<span class="xa" title="Đã xả ${xa}">${ic('schedule', '', true)}${xa}</span>`;
 // Dòng cây hai tầng, một khung cho mọi màn: trái mã cây / dưới là Lot (+ ghi chú) · phải số mét / dưới là giờ xả (màn lấy, ghép) hoặc Lô (màn xả).
 // a: thao tác khi chạm dòng — cả dòng là nút (vùng chạm lớn, đeo găng vẫn trúng); dấu + / ✓ cuối dòng chỉ báo trạng thái.
-// cu: cây sẵn có trên xe đích (màn ghép), chỉ để xem · kh: cây chưa khai ngày xả — nhãn xám bên phải dưới số mét, thay chỗ giờ xả (R24)
-function dongCay({ c, lo, xa, kh, met, on, cu, ghi, a, ten, lop = '', them = '' }) {
+// cu: cây sẵn có trên xe đích (màn ghép), chỉ để xem
+function dongCay({ c, lo, xa, met, on, cu, ghi, a, ten, lop = '', them = '' }) {
   const phu = [`<span class="lot" title="Lot ${esc(c.lot)}">Lot ${esc(lotNgan(c.lot))}</span>`, ghi ? `<small>${ghi}</small>` : ''].filter(Boolean).join('<i class="cham" aria-hidden="true">·</i>');
-  const h = `<span class="ma-w"><b class="ma">${esc(c.ma)}</b><span class="ma-p">${phu}</span></span><span class="m-w"><span class="m"><b>${so(met)}</b> m</span>${kh ? '<span class="xa kh">chưa khai ngày xả</span>' : xa ? xaHtml(xa) : ''}${lo ? `<span class="lo">${lo}</span>` : ''}</span>`;
+  const h = `<span class="ma-w"><b class="ma">${esc(c.ma)}</b><span class="ma-p">${phu}</span></span><span class="m-w"><span class="m"><b>${so(met)}</b> m</span>${xa ? xaHtml(xa) : ''}${lo ? `<span class="lo">${lo}</span>` : ''}</span>`;
   const cls = `row hai${on ? ' on' : ''}${cu ? ' cu' : ''}${lop}`;
   if (a) return `<button class="${cls} nut" role="checkbox" aria-checked="${!!on}" aria-label="${ten} ${esc(c.ma)}" data-a="${a}" data-v="${c.id}" data-cay="${c.id}"${them}>${h}<span class="act">${ck(on)}</span></button>`;
   return `<div class="${cls}" data-cay="${c.id}"${them}>${h}${cu ? '<span class="act"></span>' : ''}</div>`;
@@ -1043,14 +1043,14 @@ function scrLay() {
   return quet('Lấy vải', 'tem bàn cắt');
 }
 // Bảng lấy của Bàn cắt: chỉ cây đúng Lô + mã vải · màu của bàn (R19). Tab "Cây đã trải" (lấy trước đó, còn ≥ chiều dài sơ đồ của bàn) (R20, CR-001);
-// sau đó cây trên xe đã đủ ngày xả (cây chưa khai ngày xả cũng hiện — R24; cây chưa đủ không hiện) và cây vừa lấy
+// sau đó cây trên xe đã đủ ngày xả (cây chưa đủ và cây chưa khai ngày xả không hiện — R19, R24) và cây vừa lấy
 // ở màn này, nhóm theo xe: xe có cây xả lâu nhất trước, trong xe cây xả lâu nhất trước (R19)
 function bangBan(b, tich) {
   const g = {}, gx = r => r.gioXa;
   const xs = S.cay.filter(c => c.lo === b.lo && c.vai === b.vai && daXuat(c)).map(c => ({ c, l: lastRow(c.id) })).filter(x => x.l && !nhap(x.l));
   const du = xs.filter(x => x.l.r.daLay && !tich.includes(x.c.id) && conMet(x.c) >= b.dai);
   // Như màn Ghép (R19): cây vừa lấy cho bàn nằm ở khối của Bàn cắt (vua), xe chỉ còn cây chưa lấy
-  xs.filter(x => !x.l.r.daLay && u(x.c, x.l.r).k !== 'wait').forEach(x => (g[x.l.p.xe] = g[x.l.p.xe] || []).push(x));
+  xs.filter(x => !x.l.r.daLay && u(x.c, x.l.r).k === 'ok').forEach(x => (g[x.l.p.xe] = g[x.l.p.xe] || []).push(x));
   const vua = tich.map(id => xs.find(x => x.c.id === id)).filter(x => x && x.l.r.daLay).reverse();
   const xe = Object.keys(g).map(xe => ({ xe, ds: g[xe].sort((a, b) => gx(a.l.r) - gx(b.l.r)) })).sort((a, b) => gx(a.ds[0].l.r) - gx(b.ds[0].l.r));
   return { du, xe, vua };
@@ -1105,7 +1105,7 @@ function scrLayBan() {
     ? (nDu ? `<div class="card sunk" id="khoi-du">${conDu.map(({ c }) => dongCay({ c, met: conMet(c), ghi: ghi(c), on: false, a: 'tichdu', ten: 'Dùng phần dư', them: ' data-du="1"' })).join('')}</div>`
       : `<p class="note">Chưa có cây đã trải còn đủ ${so(b.dai)} m.</p>`)
     : (bb.xe.length ? `<div id="bang-xe">${bb.xe.map(n => theXe(n.xe, false, 'lấy cả ' + tenXe(n.xe),
-        n.ds.map(({ c, l }) => dongCay({ c, xa: daXa(l.r), kh: u(c, l.r).k === 'nokhai', met: conMet(c), ghi: ghi(c), on: false, a: 'tich', ten: 'Lấy' })).join(''), n.ds.length, n.ds.reduce((t, { c }) => t + conMet(c), 0), (bb.xe.length > 1) !== (P.mo || []).includes(n.xe))).join('')}</div>`
+        n.ds.map(({ c, l }) => dongCay({ c, xa: daXa(l.r), met: conMet(c), ghi: ghi(c), on: false, a: 'tich', ten: 'Lấy' })).join(''), n.ds.length, n.ds.reduce((t, { c }) => t + conMet(c), 0), (bb.xe.length > 1) !== (P.mo || []).includes(n.xe))).join('')}</div>`
       : bb.vua.length ? '' : `<p class="note">${LO[b.lo].lo} chưa có cây ${mauArt(b.vai)} đã xả.</p>`);
   return `<div class="scr">${bar('home', LO[b.lo].lo, b.so, nutBar('doiban', 'Đổi bàn'))}<div class="body" id="ds-ban">${hero}<div class="tab-body">${than}</div></div></div>`;
 }
@@ -1199,7 +1199,7 @@ const KICHBAN = [
   { t: 'Kết thúc xe', d: 'Xả xe 109 được 2 cây, bấm Kết thúc xe → hỏi. Bấm Kết thúc: phiếu của lượt Đã duyệt, phiếu nháp văn phòng GTV-0012 vẫn Nháp; app vào thẳng màn quét xe kế, vẫn giữ Lô 03 · CT32S-NV · Navy để xả tiếp.', b: [['go', 'xa'], ['chonlo', 'L03|CT32-NV'], ['scan', '109'], ...CHAM2, ['ketthuc']] },
   { t: 'Lấy theo bàn cắt', d: 'Quét tem bàn cắt 1234 → khung camera ẩn, đầu màn Lô 03 (dưới là BC-TSV-09-2026-1234); thẻ lớn Article CT32S-NV · Màu SP Navy · Loại BTP Chính; Cần 50 lớp × 9 m = 450 m, Thiếu 450 m; Thiếu chỉ trừ số mét trải trọn lớp của mỗi cây (cây 80 m → 8 lớp = 72 m). Dưới thẻ là 2 tab. Tab Cây trên xe: mỗi xe một thẻ (xe xả lâu nhất trước), chỉ cây đã đủ ngày xả — C-0840, C-0842 trên xe 107 chưa đủ nên không hiện; mỗi cây ghi đã xả bao lâu (2d 6h = 2 ngày 6 giờ). Chạm dòng cây ở xe = lấy, cây vào thẻ Bàn cắt; chạm vòng check trong thẻ = bỏ lấy; bấm giữ đầu thẻ xe = lấy mọi cây đang hiện của xe đó. Tab Cây đã trải: C-0799 dư 35 m = 3 lớp 27 m, chọn thì cây vào thẻ và 27 m trừ vào Thiếu, không ghi phiếu. Bấm Đổi bàn → quét bàn khác.', b: [['go', 'lay'], ['scan', '1234']] },
   { t: 'Nhiều cây vải đã trải', d: 'Bàn 1234 có 5 cây vải đã trải, mỗi cây còn dư sau bàn trước (C-0790 37 m, C-0791 30 m, C-0799 35 m, C-0812 25 m, C-0760 30 m). Tab Cây đã trải · 5 hiện đủ 5 cây; tab Cây trên xe vẫn có xe 7 (nhãn NaN “xe 7”) và xe 109.', b: [['go', 'lay'], ['scan', '1234'], ['tich', 'k20'], ['tich', 'k21'], ['tich', 'k25'], ['tich', 'k50'], ['doiban'], ['dung', 'k20:45'], ['dung', 'k21:50'], ['dung', 'k25:60'], ['dung', 'k50:40'], ['scan', '1234']] },
-  { t: 'Cây chưa khai ngày xả', d: 'Bàn 1236 (Lô 04 chưa khai ngày xả): C-0901 vẫn hiện, nhãn xám "chưa khai ngày xả", lấy được như cây đủ (chạm để lấy).', b: [['go', 'lay'], ['scan', '1236']] },
+  { t: 'Cây chưa khai ngày xả', d: 'Bàn 1236 (Lô 04 chưa khai ngày xả): C-0901 không hiện ở bảng lấy, như cây chưa đủ ngày xả (R24).', b: [['go', 'lay'], ['scan', '1236']] },
   { t: 'Tem sai ở Lấy vải', d: 'Màn Lấy vải chỉ nhận tem bàn cắt: quét tem xe 107 → báo đỏ. Tem 9999 không có bàn → báo đỏ.', b: [['go', 'lay'], ['scan', '107'], ['scan', '9999']] },
   { t: 'Mất mạng', d: 'Báo đỏ nổi ở đáy màn “Mất mạng, chưa ghi”, không đẩy bố cục; chạm cây không ghi. Bấm Có mạng lại → báo tự tắt, màn tự tải lại.', b: [['go', 'xa'], ['chonlo', 'L03|CT32-NV'], ['scan', '109'], ['net'], ['chonlo', 'L03|CT32-NV'], ['cham', 'k1']] },
   { t: 'Tắt màn hình giữa chừng', d: 'Bật lại → vẫn ở xe 109.', b: [['go', 'xa'], ['chonlo', 'L03|CT32-NV'], ['scan', '109'], ...CHAM2, ['mantat'], ['mantat']] },
