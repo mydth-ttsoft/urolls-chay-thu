@@ -547,7 +547,8 @@ function seed() {
 let S = seed();
 // Safari iPhone vuốt xuống là tải lại trang: giữ trạng thái app trong phiên của tab (sessionStorage), tải lại thì khôi phục.
 // Máy không cho dùng bộ nhớ → chạy như cũ. Đổi dữ liệu mẫu thì tăng LUU_BAN để bỏ bản lưu cũ
-const LUU_KEY = 'urolls-trang-thai', LUU_BAN = 5;
+// LUU_BAN theo ngày giờ của bản trang đang chạy (document.lastModified): đăng bản mới lên link là chỗ đang làm cũ tự bỏ, dữ liệu thử mới hiện ngay, không phụ thuộc nhớ đổi số tay (04/10)
+const LUU_KEY = 'urolls-trang-thai', LUU_BAN = 'ban-' + document.lastModified;
 function luuTrangThai() { try { sessionStorage.setItem(LUU_KEY, JSON.stringify({ ban: LUU_BAN, S: { ...S, toast: null } })); } catch (e) {} }
 function docTrangThai() { try { const x = JSON.parse(sessionStorage.getItem(LUU_KEY) || 'null'); return x && x.ban === LUU_BAN && x.S && Array.isArray(x.S.cay) && Array.isArray(x.S.phieu) && typeof x.S.screen === 'string' ? x.S : null; } catch (e) { return null; } }
 function xoaLuu() { try { sessionStorage.removeItem(LUU_KEY); } catch (e) {} }
