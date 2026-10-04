@@ -661,6 +661,7 @@ function vaoXe(c, kieu = 'Xả mới', gioGoc = null, tu = null) {
   if (!online()) return;
   const tren = trenXe(S.sess.xe);
   const loMoi = tren.length && !tren.some(x => x.c.lo === c.lo);
+  if (loMoi && S.sess.man === 'xa') { const lo0 = tren[0].c.lo; if (trangThai(c.id) === 'chua') c.lo = null; toast('err', `${tx(S.sess.xe, 1)} đang chứa ${LO[lo0].lo} — xả vải mỗi xe một Lô.`); return; }
   if (loMoi && !S.sess.warned[c.lo]) { S.sheet = { kind: 'tronlo', cay: c.id, kieu, gioGoc, tu }; log(`Hỏi: ${tx(S.sess.xe)} đang chứa Lô khác, thêm cây ${LO[c.lo].lo}?`, 'wr'); return; }
   const { r } = themDong(c, kieu, gioGoc);
   S.sess.ds.push({ seq: r.seq, cay: c.id, tu });
@@ -747,6 +748,8 @@ function scan(raw) {
   const sc = S.screen;
   if (sc === 'xa-xe' || sc === 'ghep-xe') {
     if (!xeHopLe(code)) { toast('err', `${code}: không phải tem xe.`); return; }
+    // Xả vải: một xe một Lô (chị Mydth 04/10) — xe đang chứa cây chưa lấy của Lô khác thì không mở lượt xả (R11)
+    if (sc === 'xa-xe' && S.chon) { const khac = trenXe(code).find(x => x.c.lo && x.c.lo !== S.chon.lo); if (khac) { toast('err', `${tx(code, 1)} đang chứa ${LO[khac.c.lo].lo} — quét xe khác hoặc chọn dòng ${LO[khac.c.lo].lo}.`); return; } }
     return moXe(code, sc === 'ghep-xe' ? 'ghep' : 'xa');
   }
   if (sc === 'lay') {
@@ -1012,7 +1015,7 @@ function scrXa() {
   const s = S.sess, c = S.chon;
   // d2c ⑪⑫: dòng tên Lô có khung tìm nhỏ bên phải, không chiếm dòng riêng; ⑩ nút Đổi Lô hàng nằm trên đầu màn
   const dau = c ? `<div class="sect${s.ds.length ? ' dinh' : ''}" id="sect-lo"><span><b>${LO[c.lo].lo}</b><small>${mauArt(c.vai)}</small></span>${khungTim('Lot, Cây vải', true)}</div>` : '';
-  return `<div class="scr">${bar('home', 'Xả vải', '', `<span class="nut2">${nutBar('doilo', 'Đổi Lô hàng')}${nutXe(s)}</span>`)}<div class="body" id="ds-xa">${s.ds.length ? '' : '<div class="hero-gap"></div>'}${bangLuot(s)}${dau}${c ? dsCay(c.lo, c.vai) : ''}</div></div>`;
+  return `<div class="scr">${bar('home', 'Xả vải', '', `<span class="nut2">${s.ds.length ? '' : nutBar('doilo', 'Đổi Lô hàng')}${nutXe(s)}</span>`)}<div class="body" id="ds-xa">${s.ds.length ? '' : '<div class="hero-gap"></div>'}${bangLuot(s)}${dau}${c ? dsCay(c.lo, c.vai) : ''}</div></div>`;
 }
 // Cây chờ xả của dòng Lô · Article · Màu vải (R8): nhóm theo Lot, trong Lot xếp theo mã cây; chạm dòng là cây vào xe.
 // Đầu nhóm Lot (cùng nền thẻ) bấm để thu / bung nhóm; từ 2 Lot thu gọn sẵn, 1 Lot bung sẵn (R8).
@@ -1104,9 +1107,11 @@ function scrLayBan() {
 }
 // Ghép xe vải: xe đích đứng đầu (chỉ để xem trên xe đang có gì); sau đó các xe đang lấy dở: có ≥ 1 cây Đã lấy
 // và còn ≥ 1 cây chưa lấy, trong xe chỉ cây chưa lấy. Cây Đã lấy (kể cả còn dư) không ghép (R15)
+// Mẻ vải đang trên xe = các phiếu Xả vải của xe tạo cùng ngày với phiếu tạo sau cùng (xả mỗi xe một lượt một Lô, 2–3 ngày sau mới chất mẻ mới; ghép nhiều Lô thì nhiều phiếu cùng lúc) — R15
+function meXe(xe) { const ps = S.phieu.filter(p => p.xe === xe); if (!ps.length) return new Set(); const n = ngayCua(Math.max(...ps.map(p => p.ht))); return new Set(ps.filter(p => ngayCua(p.ht) === n)); }
 function bangGhep(s) {
   const g = {}, gx = r => r.gioXa, xep = ds => ds.sort((a, b) => gx(a.l.r) - gx(b.l.r));
-  for (const c of S.cay) { const l = lastRow(c.id); if (!l || nhapKhac(l) || !daXuat(c)) continue; const n = g[l.p.xe] = g[l.p.xe] || { lay: 0, ds: [] }; if (l.r.daLay) n.lay++; else n.ds.push({ c, l }); }
+  for (const c of S.cay) { const l = lastRow(c.id); if (!l || nhapKhac(l) || !daXuat(c)) continue; const n = g[l.p.xe] = g[l.p.xe] || { lay: 0, ds: [] }; if (l.r.daLay) { if (meXe(l.p.xe).has(l.p)) n.lay++; } else n.ds.push({ c, l }); }
   const khac = Object.keys(g).filter(xe => xe !== s.xe && g[xe].lay && g[xe].ds.length).map(xe => ({ xe, ds: xep(g[xe].ds) })).sort((a, b) => gx(a.ds[0].l.r) - gx(b.ds[0].l.r));
   return { dich: xep(g[s.xe] ? g[s.xe].ds : []), khac };
 }
@@ -1183,7 +1188,7 @@ const CHAM2 = [['cham', 'k1'], ['cham', 'k2']];
 const KICHBAN = [
   { t: 'Xả một xe từ đầu', d: 'Bấm Xả vải → chạm Lô 03 · CT32S-NV · Navy → quét xe 109: khung camera ẩn, hiện ngay cây Lô 03. Chạm C-0801, C-0802: mỗi cây một dòng trong bảng, Lô tự điền theo dòng đã chọn. Bảng SMB: phiếu nháp mới của lượt; phiếu nháp GTV-0012 văn phòng lập không thêm dòng.', b: [['go', 'xa'], ['chonlo', 'L03|CT32-NV'], ['scan', '109'], ...CHAM2] },
   { t: 'Danh sách chỉ có cây chờ xả', d: 'Chọn Lô 03 · CT32S-NV · Navy, quét xe 109: danh sách cây không có C-0807 (đã ở xe 109), C-0840 (đang ở xe 107), C-0799 (đã lấy ra trải). Lô 05 không có C-0999 (Poly Navy chỉ có trên phiếu xuất kho PX-0931 đã duyệt).', b: [['go', 'xa'], ['chonlo', 'L03|CT32-NV'], ['scan', '109'], ['chonlo', 'L03|CT32-NV']] },
-  { t: 'Hai Lô chung một xe', d: 'Xe 109 đang chứa Lô 03, bấm Đổi Lô hàng → chạm Lô 04 → chạm C-0902 → app hỏi trước khi ghi. Bấm Thêm vào xe: Lô 04 có phiếu riêng.', b: [['go', 'xa'], ['chonlo', 'L03|CT32-NV'], ['scan', '109'], ['chonlo', 'L03|CT32-NV'], ['cham', 'k1'], ['go', 'xa'], ['chonlo', 'L04|KT-WH'], ['cham', 'k31']] },
+  { t: 'Xả vải mỗi xe một Lô', d: 'Chọn dòng Lô 04 · KTCVC-WH · White rồi quét xe 109 (đang chứa Lô 03) → báo đỏ, không mở xe. Xe trống thì mở được; đã có cây vào xe thì không còn nút Đổi Lô hàng. Gộp nhiều Lô vào một xe chỉ làm ở Ghép xe vải (hỏi trước khi ghi).', b: [['go', 'xa'], ['chonlo', 'L04|KT-WH'], ['scan', '109']] },
   { t: 'Bỏ cây khỏi xe', d: 'Chạm vòng check ở dòng C-0802 trong thẻ xe 109: dòng mất khỏi bảng và khỏi phiếu nháp trên SMB, cây về lại danh sách cây của Lô. Xoá được tới lúc Kết thúc xe.', b: [['go', 'xa'], ['chonlo', 'L03|CT32-NV'], ['scan', '109'], ...CHAM2] },
   { t: 'Ghép xe vải', d: 'Gom cây về xe 109: thẻ lớn là xe 109 (cây sẵn có chữ mờ, chỉ để xem), dưới là Danh sách Xe cần ghép (chạm thẻ xe để bung). Chạm dòng C-0790 → sang xe 109 ngay, giờ xả giữ nguyên; chạm vòng check trong thẻ xe 109 → về xe 103. Bấm giữ đầu thẻ Xe 103 → cả xe sang.', b: [['go', 'ghep-xe'], ['scan', '109'], ['ghept', 'k20']] },
   { t: 'Tem sai', d: 'Màn quét xe chỉ nhận tem xe 101–500: tem 650 và tem bàn cắt 1234 → báo đỏ, không mở xe.', b: [['go', 'xa'], ['chonlo', 'L03|CT32-NV'], ['scan', '650'], ['scan', '1234']] },
