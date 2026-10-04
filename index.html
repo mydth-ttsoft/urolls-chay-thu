@@ -692,7 +692,7 @@ function ketThuc() {
   if (man !== 'xa') go('ghep-xe'); else if (con) go('xa-xe'); else { S.chon = null; go('xa-lo'); }
   toast('ok', `Đã kết thúc ${tx(xe)}.` + (c && !con ? ` ${LO[c.lo].lo} · ${mauArt(c.vai)} đã xả hết cây.` : ''));
 }
-// Thoát app, đăng xuất, mở app sang ngày khác → lượt đang mở tự Kết thúc như R13, không hỏi;
+// Thoát app, Đổi người dùng, sang ngày khác → lượt đang mở tự Kết thúc như R13, không hỏi;
 // chưa xả cây nào thì bỏ lượt (R6). Mất mạng thì chưa ghi được → lượt vẫn mở (R26). Trả về true khi đã đóng lượt.
 function tuKetThuc(lyDo) {
   if (!S.sess) return false;
@@ -701,7 +701,7 @@ function tuKetThuc(lyDo) {
   duyetLuot(`Tự kết thúc (${lyDo})`); return true;
 }
 const ngayCua = t => { const d = new Date(t); return d.getFullYear() * 10000 + d.getMonth() * 100 + d.getDate(); };
-// Mở app lại (bật màn hình, mở sau khi thoát): lượt mở từ hôm trước thì tự kết thúc (R6)
+// Đang mở app (bật màn hình, có mạng lại) mà lượt mở từ ngày trước → tự kết thúc (R6); mất mạng thì báo đỏ R6. Mở lại app sau khi thoát xét ở moLai()
 // Màn sau khi lượt kết thúc (bấm tay R13 hay tự kết thúc R6): Xả vải giữ dòng đã chọn ở màn quét xe, dòng hết cây chờ thì về Danh sách Lô hàng; Ghép về màn quét xe
 function manSauLuot(man) { if (man !== 'xa') return 'ghep-xe'; const c = S.chon; if (c && choLo(c.lo, c.vai).length) return 'xa-xe'; S.chon = null; return 'xa-lo'; }
 function sangNgayKhac() {
@@ -1316,7 +1316,7 @@ function render() {
   NGAN_VAO = false;
   if (TIM_FOCUS) { TIM_FOCUS = false; const t = document.getElementById('tim-cay'); if (t) { t.focus(); t.setSelectionRange(t.value.length, t.value.length); } }
 }
-// Mở app sau khi thoát: chưa đăng nhập → đăng nhập; lượt còn mở (vì mất mạng lúc thoát) → vào lại, trừ khi đã sang ngày khác
+// Mở app sau khi thoát: chưa đăng nhập → đăng nhập; còn lượt mở (vì mất mạng lúc thoát) → xét mạng lúc mở (xem dưới); không còn lượt → màn như sau khi bấm Kết thúc xe
 function moLai() {
   if (!S.user) go('login');
   // Còn lượt mở = lúc thoát app bị mất mạng nên chưa kết thúc được (R6). Mở lại app thì xét mạng lúc này:
@@ -1387,7 +1387,7 @@ function doAct0(a, v) {
     case 'net': S.offline = !S.offline; log(S.offline ? 'Mất mạng' : 'Có mạng lại — màn tự tải lại', 'in'); if (!S.offline && !S.appOff) sangNgayKhac(); break;   // có mạng lại: lượt của ngày trước tự kết thúc (R6)
     // Tắt màn hình / chuyển app khác: giữ nguyên xe đang mở (R6)
     case 'mantat': if (S.appOff) break; if (S.manTat) { S.manTat = false; log('Bật màn hình', 'in'); sangNgayKhac(); } else { S.manTat = true; S.sheet = null; log('Tắt màn hình', 'in'); } break;
-    // Thoát app: lượt đang mở tự kết thúc (R6); mở lại → màn quét xe
+    // Thoát app: lượt đang mở tự kết thúc (R6); mở lại → màn như bấm Kết thúc xe (R13)
     case 'thoat': if (S.appOff) { S.appOff = false; log('Mở lại app', 'in'); moLai(); }
       else { S.manTat = false; log('Thoát app', 'in'); const co = !!S.sess, man = co && S.sess.man; if (co) tuKetThuc('thoát app'); S.sauThoat = co && !S.sess ? manSauLuot(man) : null; S.appOff = true; S.sheet = null; } break;
     // Sáng hôm sau: tua tới 07:00 ngày kế tiếp rồi mở app (R6: mở app sang ngày khác)
