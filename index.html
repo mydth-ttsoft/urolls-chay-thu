@@ -1384,7 +1384,7 @@ function doAct0(a, v) {
     case 'lot': if (S.screen === 'xa') { const t = S.params.dong = S.params.dong || [], i = t.indexOf(v); if (i < 0) t.push(v); else t.splice(i, 1); } break;
     case 'manual': S.manual = !S.manual; S.kp = ''; break;
     case 'kp': S.kp = v === 'C' ? '' : v === '⌫' ? (S.kp || '').slice(0, -1) : ((S.kp || '') + v).slice(0, 5); break;
-    case 'kpluu': { const so = S.kp || ''; S.manual = false; S.kp = ''; if (so) doAct('scan', so); break; }
+    case 'kpluu': { const so = S.kp || ''; S.manual = false; S.kp = ''; if (so) { pip(); doAct('scan', so); } break; } // gõ tay LƯU = đọc được tem: rung + bíp như quét (R3)
     case 'camon': batCam(); break;
     case 'den': if (CAM.track && CAM.coDen) { const bat = !CAM.den; try { Promise.resolve(CAM.track.applyConstraints({ advanced: [{ torch: bat }] })).then(() => { CAM.den = bat; render(); }, () => {}); } catch (e) {} } break;
     case 'intem': TEM_MO = true; setTimeout(() => window.print(), 300); break;
