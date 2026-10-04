@@ -270,6 +270,7 @@ tr.new td{animation:hl 2.4s ease-out}
 .phone .hero-body .row+.row{box-shadow:inset 0 1px 0 var(--raise-line)}
 .phone .hero-body.pad{padding:var(--s5) var(--pad) var(--s5)}
 .phone .stick.co-lay{padding-bottom:0}
+.phone .body>.tabs{position:sticky;top:var(--dau,0px);z-index:4;background:var(--bg)}   /* thanh tab dính dưới đầu thẻ khi kéo, như dòng tiêu đề dưới thẻ chính ở Xả vải và Ghép (đồng bộ 04/10) */
 .phone .stick.co-lay .hero{border-radius:var(--r-xl) var(--r-xl) 0 0}
 .phone .hero-body.lay-ds{border-radius:0 0 var(--r-xl) var(--r-xl);box-shadow:inset 0 1px 0 var(--raise-line),var(--sh-hero)}
 .phone .hero-empty{margin:0;padding:var(--s4);text-align:center;font-size:var(--t-cap);font-weight:600;color:var(--hero-ink-2)}
@@ -480,6 +481,8 @@ function seed() {
     c('k24', 'C-0842', 'CT32-NV', 'B', 72, 'L03'),
     c('k25', 'C-0812', 'CT32-NV', 'A', 85, 'L03'),
     c('k26', 'C-0845', 'CT32-WH', 'E', 70, 'L03'),
+    c('k70', 'C-0770', 'CT32-WH', 'E', 75, 'L03'),   // xe 108 lấy dở: C-0770 đã lấy (còn 5 m), C-0771 chưa lấy → màn Ghép có 2 xe, thấy thu gọn sẵn (d2c 04/10)
+    c('k71', 'C-0771', 'CT32-WH', 'E', 68, 'L03'),
     c('k30', 'C-0901', 'KT-WH', 'C', 60),
     c('k31', 'C-0902', 'KT-WH', 'C', 72),
     c('k32', 'C-0903', 'KT-WH', 'C', 55),
@@ -517,6 +520,7 @@ function seed() {
   const phieu = [
     { so: 'GTV-0014', xe: 'xe 7', lo: 'L03', tt: 'duyet', nguon: 'SMB', ht: T0 - 3 * D, rows: [r('k50', T0 - 3 * D), r('k51', T0 - 3 * D + 20 * MIN)] },
     { so: 'GTV-0011', xe: '103', lo: 'L03', tt: 'duyet', nguon: 'app', ht: tA, rows: [r('k20', tA), r('k21', tA + 4 * MIN), r('k22', tA + 9 * MIN, { daLay: true, gioLay: T0 - 70 * MIN, nguoiLay: 'Hoa' }), r('k27', tA + 10 * MIN, { daLay: true, gioLay: T0 - 70 * MIN, nguoiLay: 'Hoa' }), r('k23', tB), r('k26', tA + 15 * MIN, { daLay: true, gioLay: T0 - 2 * H, nguoiLay: 'Hoa' })] },
+    { so: 'GTV-0007', xe: '108', lo: 'L03', tt: 'duyet', nguon: 'app', ht: T0 - 2 * D, rows: [r('k70', T0 - 2 * D, { daLay: true, gioLay: T0 - 3 * H, nguoiLay: 'Hoa' }), r('k71', T0 - 2 * D + 5 * MIN)] },
     { so: 'GTV-0015', xe: '107', lo: 'L03', tt: 'duyet', nguon: 'app', ht: T0 - 17 * H, rows: [r('k23', tB), r('k24', tB + 25 * MIN), r('k25', tA + 12 * MIN)] },
     { so: 'GTV-0016', xe: '107', lo: 'L04', tt: 'duyet', nguon: 'app', ht: T0 - 70 * MIN, rows: [r('k30', T0 - 70 * MIN)] },
     { so: 'GTV-0017', xe: '111', lo: 'L05', tt: 'duyet', nguon: 'app', ht: T0 - 5 * H, rows: [r('k40', T0 - 5 * H)] },
@@ -536,7 +540,7 @@ function seed() {
                // lượt đang mở {xe, man: 'xa' | 'ghep', start, warned:{}, ds: dòng đã vào xe trong lượt, phieu:[]}
     vuot: null,
     cay, phieu, pxk,
-    banCat: { k22: 65, k26: 20, k27: 74 },   // số mét đã dùng theo Bàn cắt (D7)
+    banCat: { k22: 65, k26: 20, k27: 74, k70: 70 },   // số mét đã dùng theo Bàn cắt (D7)
     log: [], sheet: null, toast: null, hit: 0, lastSeq: 0, manual: false,
   };
 }
@@ -1209,7 +1213,7 @@ function cuonXeDinh(bd, M) {
 let XD = null;
 function datDinh(bd, doLai) {
   const st = bd.querySelector(':scope > .stick');
-  if (st) { bd.style.setProperty('--dinh', st.offsetHeight + 'px'); return; }
+  if (st) { const tb = bd.querySelector(':scope > .tabs'); bd.style.setProperty('--dau', st.offsetHeight + 'px'); bd.style.setProperty('--dinh', st.offsetHeight + (tb ? tb.offsetHeight : 0) + 'px'); return; }
   if (doLai || !XD || XD.bd !== bd) { const M = doXeDinh(bd); XD = M && { bd, M }; if (M) bd.style.setProperty('--dinh', M.dinh + 'px'); }
   if (XD) cuonXeDinh(bd, XD.M);
 }
