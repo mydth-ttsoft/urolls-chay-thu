@@ -967,12 +967,12 @@ function scrXa() {
 const khungTim = (goi, nho) => `<label class="tim-o${nho ? ' nho' : ''}">${ic('search', 'i-m c-3')}<input id="tim-cay" type="search" placeholder="${goi}" value="${esc(S.params.tim || '')}" autocomplete="off" aria-label="${goi}">${(S.params.tim || '').trim() ? `<button class="tim-xoa" data-a="timxoa" aria-label="Xoá chữ tìm">${ic('close', 'i-s c-3')}</button>` : ''}</label>`;
 const MAN_TIM = ['xa', 'ghep'];
 // Cây chờ xả của dòng Lô · Màu · Article (R8): khung tìm (#68) + nhóm theo Lot, trong Lot xếp theo mã cây; chạm dòng là cây vào xe.
-// Đầu nhóm Lot bấm để thu / bung nhóm; mặc định bung hết
+// Đầu nhóm Lot bấm để thu / bung nhóm; từ 2 Lot trở lên thì thu gọn sẵn, 1 Lot thì bung sẵn; đang tìm thì nhóm có cây khớp tự bung (R8)
 function dsCay(lo, vai) {
-  const s = S.sess, g = {}, dong = S.params.dong || [], tim = (S.params.tim || '').trim().toUpperCase();
-  choLo(lo, vai).filter(c => !tim || c.ma.toUpperCase().includes(tim) || String(c.lot).toUpperCase().includes(tim)).forEach(c => (g[c.lot] = g[c.lot] || []).push(c));
+  const s = S.sess, g = {}, dong = S.params.dong || [], tim = (S.params.tim || '').trim().toUpperCase(), tatCa = choLo(lo, vai), motLot = new Set(tatCa.map(c => c.lot)).size < 2;
+  tatCa.filter(c => !tim || c.ma.toUpperCase().includes(tim) || String(c.lot).toUpperCase().includes(tim)).forEach(c => (g[c.lot] = g[c.lot] || []).push(c));
   const theoMa = (a, b) => a.ma.localeCompare(b.ma, 'vi', { numeric: true });
-  const than = Object.keys(g).sort().map(lot => { const k = vai + '|' + lot, mo = !dong.includes(k);
+  const than = Object.keys(g).sort().map(lot => { const k = vai + '|' + lot, mo = !!tim || (motLot !== dong.includes(k));   // dong: Lot đã chạm đổi khỏi mặc định
     return `<div class="card"><button class="card-h nut" data-a="lot" data-v="${esc(k)}" aria-expanded="${mo}"><b>Lot ${esc(lot)}</b><span class="n">${g[lot].length} cây</span><span class="act">${ic(mo ? 'expand_less' : 'expand_more', 'i-m c-2')}</span></button>${!mo ? '' : g[lot].sort(theoMa).map(c =>
     `<button class="row nut" data-a="cham" data-v="${c.id}" aria-label="Thêm ${esc(c.ma)} vào ${tx(s.xe)}"><b class="ma">${esc(c.ma)}</b><span class="m"><b>${so(c.met)}</b> m</span><span class="act">${ck(false)}</span></button>`).join('')}</div>`; }).join('');
   return `<div id="ds-chon">${than || `<p class="note">${tim ? `Không có cây khớp “${esc(S.params.tim.trim())}”.` : 'Không còn cây.'}</p>`}</div>`;
@@ -1241,9 +1241,11 @@ function doAct(a, v) {
   switch (a) {
     case 'scan': scan(v); break;
     case 'dangnhap': dangNhap('binhtv.cat'); break;
-    // Quay về Trang chính khi chưa ghi cây nào → bỏ lượt (R14). Xả vải / Ghép xe vải khi đang có lượt → vào lượt đó
+    // Quay về Trang chính khi chưa ghi cây nào → bỏ lượt (R14). Xả vải / Ghép xe vải khi đang có lượt cùng việc → vào lượt đó; khác việc → về lượt đang mở, báo vàng (R5)
     case 'go': if (v === 'home' && S.sess && !S.sess.ds.length && ['xa', 'ghep'].includes(S.screen)) boXe();
-      if (v === 'xa' || v === 'ghep') { if (!S.sess) { go(v === 'xa' ? 'xa-lo' : 'ghep-xe'); break; } S.sess.man = v; }
+      if (v === 'xa' || v === 'ghep') { if (!S.sess) { go(v === 'xa' ? 'xa-lo' : 'ghep-xe'); break; }
+        // Xả vải và Ghép xe vải là hai việc riêng: đang có lượt của việc kia → về lại lượt đang mở, báo vàng (R5)
+        if (S.sess.man !== v) { const xe = tx(S.sess.xe); S.vuot = null; go(S.sess.man); toast('warn', S.sess.man === 'xa' ? `Đang xả ${xe} — Kết thúc xe rồi mới Ghép xe vải.` : `Đang ghép ${xe} — Kết thúc xe rồi mới Xả vải.`); break; } }
       if (v === 'xa-xe' && !S.chon) { go('xa-lo'); break; }
       S.vuot = null; go(v); break;
     case 'boxe': { if (!S.sess) break; const man = S.sess.man; boXe(); go(man + '-xe'); break; }
@@ -1256,7 +1258,7 @@ function doAct(a, v) {
     case 'toi': doiGiaoDien(); log('Giao diện ' + (GD === 'dk' ? 'tối' : 'sáng'), 'in'); break;
     case 'cham': { const c = cayBy(v), lo = S.chon && S.chon.lo; S.sheet = null; if (S.sess && c && lo && choLo(lo, S.chon.vai).includes(c)) { c.lo = lo; vaoXe(c); } break; }
     // Màn xả: chạm một Lô → chọn cây của Lô đó (R8)
-    case 'chonlo': { const [lo, vai] = String(v).split('|'); if (!LO[lo] || !VAI[vai]) break; S.chon = { lo, vai }; if (S.sess) { S.sess.man = 'xa'; go('xa'); } else go('xa-xe'); break; }
+    case 'chonlo': { const [lo, vai] = String(v).split('|'); if (!LO[lo] || !VAI[vai]) break; if (S.sess && S.sess.man !== 'xa') break; S.chon = { lo, vai }; if (S.sess) go('xa'); else go('xa-xe'); break; }
     // Màn Ghép: chạm dòng cây → ghép / bỏ ghép một cây (R15)
     case 'ghept': if (S.sess && S.screen === 'ghep' && cayBy(v)) ghepTich(v); break;
     // Nhóm Cây vải đã trải: tích chỉ để tính Thiếu và dòng Đã lấy, không ghi phiếu (R20)
