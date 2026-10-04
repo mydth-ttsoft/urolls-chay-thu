@@ -133,6 +133,8 @@ tr.new td{animation:hl 2.4s ease-out}
 .phone .btn{height:52px;padding:0 var(--s5);display:flex;align-items:center;justify-content:center;gap:var(--s2);border:none;border-radius:var(--r-pill);background:var(--brand-fill);color:var(--on-brand);font-size:var(--t-row);font-weight:700;cursor:pointer;white-space:nowrap}
 .phone .btn.ghost{background:var(--ghost);color:var(--ink)}
 .phone .btn.sm{height:40px;padding:0 var(--s4);font-size:var(--t-body)}
+/* nút trên đầu màn: cùng một cỡ ở mọi màn, đệm hẹp để màn Xả vải có 2 nút vẫn đọc đủ tiêu đề (đồng bộ 04/10) */
+.phone .bar .btn.sm{padding:0 var(--s2)}
 .phone .btn.full{width:100%}
 .phone .link{display:inline-flex;align-items:center;border:none;background:none;padding:0;color:var(--brand);font-size:var(--t-cap);font-weight:700;cursor:pointer}
 .phone .tim-o{display:flex;align-items:center;gap:var(--s2);height:48px;margin:var(--s3) 0 0;padding:0 var(--s3);border:1px solid var(--line);border-radius:var(--r-m);background:var(--card)}
@@ -157,7 +159,7 @@ tr.new td{animation:hl 2.4s ease-out}
 .phone .card-h{display:flex;align-items:center;justify-content:space-between;gap:var(--s2);min-height:40px;padding:var(--s2) var(--pad) var(--s1);font-size:var(--t-cap);font-weight:700;color:var(--ink-2)}
 .phone .card-h span{font-weight:600}
 .phone .card-h.nut{width:100%;min-height:48px;padding:0 var(--pad);border:none;background:none;font-size:var(--t-body);text-align:left;cursor:pointer}
-.phone .card-h.nut b{flex:1;font-weight:700}
+.phone .card-h.nut b{flex:1;font-weight:700;color:var(--ink)}
 .phone .card-h.nut[aria-expanded="true"]{box-shadow:inset 0 -1px 0 var(--line)}
 .phone .card-h.nut[aria-expanded="true"]+.row{box-shadow:none}
 .phone .card-h.nut .n{font-weight:600;color:var(--ink-3)}
@@ -197,16 +199,17 @@ tr.new td{animation:hl 2.4s ease-out}
 .phone .grp-h.on{background:var(--sel)}
 .phone .grp-h.on+.row.on{box-shadow:inset 0 1px 0 var(--sel-line)}
 .phone .card.xe{overflow:clip}
-.phone .card.xe+.card.xe{margin-top:var(--s4)}
-.phone .xe-nhan{position:sticky;top:var(--dinh,0px);z-index:3;display:flex;align-items:flex-start;width:100%;height:34px;padding:0;border:none;background:var(--card);font:inherit;cursor:pointer;text-align:left}
-.phone .card.xe:has(>.xe-nhan+.row.on) .xe-nhan,.phone .xe-nhan.on{background:var(--sel)}
-.phone .card.xe:has(>.xe-nhan+.row.on) .xe-nhan:not(.on) .tag{background:var(--card)}
+/* đồng bộ 04/10: thẻ xe (Lấy vải, Ghép) cách nhau và có đầu thẻ giống nhóm Lot ở màn Xả vải — cao 48px, tên 15px đậm bên trái,
+   số cây · số mét xám bên phải, mũi tên cuối; đầu thẻ dính đầu vùng cuộn; cả xe đã lấy thì đầu thẻ nền xanh */
+.phone .xe-nhan{position:sticky;top:var(--dinh,0px);z-index:3;display:flex;align-items:center;width:100%;height:48px;padding:0 var(--pad);border:none;background:var(--card);font:inherit;cursor:pointer;text-align:left}
+.phone .card.xe:has(>.row) .xe-nhan{box-shadow:inset 0 -1px 0 var(--line)}
+.phone .card.xe:has(>.xe-nhan+.row.on) .xe-nhan{background:var(--sel)}
 .phone .card:has(.row.on){border-color:var(--sel-line)}
-.phone .xe-nhan .tag{display:inline-flex;align-items:center;gap:4px;height:28px;padding:0 var(--s3);border-radius:0 0 var(--r-m) 0;background:var(--chip);color:var(--ink);font-size:var(--t-cap);font-weight:800;white-space:nowrap}
-.phone .xe-nhan .tag .n{font-weight:600;color:var(--ink-2)}
-.phone .xe-nhan .tag .mi{font-size:18px}
-.phone .xe-nhan.on .tag{background:var(--brand-fill);color:var(--on-brand)}
-.phone .xe-nhan.on .tag .n{color:inherit;opacity:.85}
+.phone .xe-nhan .tag{flex:1;min-width:0;display:flex;align-items:center;gap:var(--s2);color:var(--ink);font-size:var(--t-body);font-weight:700;white-space:nowrap}
+.phone .xe-nhan .tag .n{margin-left:auto;font-weight:600;color:var(--ink-3)}
+.phone .xe-nhan .tag .mi{font-size:24px;color:var(--ink-2)}
+.phone .xe-nhan.on{background:var(--brand-fill)}
+.phone .xe-nhan.on .tag,.phone .xe-nhan.on .tag .n,.phone .xe-nhan.on .tag .mi{color:var(--on-brand)}
 .phone .xe-nhan.la .tag small{font-size:var(--t-cap);font-weight:700}
 .phone .xe-nhan+.row{box-shadow:none}
 .phone .row .act .ck:not(.on){background:color-mix(in srgb,var(--brand) 10%,transparent)}
@@ -401,7 +404,7 @@ tr.new td{animation:hl 2.4s ease-out}
 .phone .kp-luu{width:100%;height:50px;border:none;border-radius:12px;background:#16A34A;color:#fff;font-size:15px;font-weight:800;letter-spacing:.5px;cursor:pointer}
 .phone .sr{position:absolute;left:-9999px}
 .phone .xe-nhan{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;touch-action:manipulation}
-.phone .xe-nhan.giu .tag{background:var(--sel-line)}
+.phone .xe-nhan.giu{background:var(--sel-line)}
 .phone .tat{align-items:center;justify-content:center;background:#0B1220;color:#94A3B8;font-size:var(--t-cap)}
 @media print{body *{visibility:hidden}#tem-in,#tem-in *{visibility:visible}#tem-in{position:absolute;left:0;top:0;width:100%}}
 </style>
@@ -837,7 +840,7 @@ const nhanXe = xe => xeHopLe(xe) ? `Xe ${esc(xe)}` : `NaN <small>${esc(txLa(xe))
 // chạm nhanh nhãn = bung / thu xe, bấm giữ dòng cây không lấy cả xe. Nhãn xám · nền trắng khi thẻ có dòng chọn · xanh đặc khi cả xe đã lấy
 // d2c #72: nhãn xe ghi số cây · tổng số mét các cây đang hiện của xe (m)
 // thu: màn Ghép (d2c #74) và màn Bàn cắt (d2c ④ 04/10) — true = thu gọn chỉ còn nhãn xe, false = đang bung
-const theXe = (xe, on, viec, rows, n, m, thu) => `<div class="card xe" data-xe="${esc(xe)}"><button class="xe-nhan${xeHopLe(xe) ? '' : ' la'}${on ? ' on' : ''}" aria-pressed="${on}" aria-label="Giữ để ${viec}" data-giu="tichxe" data-v="${esc(xe)}"><span class="tag">${on ? ic('check_circle', '', true) : ''}${nhanXe(xe)}<span class="n">· ${n} cây${m != null ? ` · ${so(Math.round(m * 10) / 10)} m` : ''}</span>${thu == null ? '' : ic(thu ? 'expand_more' : 'expand_less', 'i-s c-3')}</span></button>${thu ? '' : rows}</div>`;
+const theXe = (xe, on, viec, rows, n, m, thu) => `<div class="card xe" data-xe="${esc(xe)}"><button class="xe-nhan${xeHopLe(xe) ? '' : ' la'}${on ? ' on' : ''}" aria-pressed="${on}" aria-label="Giữ để ${viec}" data-giu="tichxe" data-v="${esc(xe)}"><span class="tag">${on ? ic('check_circle', '', true) : ''}${nhanXe(xe)}<span class="n">${n} cây${m != null ? ` · ${so(Math.round(m * 10) / 10)} m` : ''}</span>${thu == null ? '' : ic(thu ? 'expand_more' : 'expand_less', 'i-s c-3')}</span></button>${thu ? '' : rows}</div>`;
 const heroXe = (ovl, xe, n, than) => `<div class="hero" id="xe-hero"><div class="hero-h"><span class="ovl">${ovl}</span><b class="hero-big">${tx(xe, 1)}</b><span class="pill glass"><b>${n}</b> cây</span></div>${than}</div>`;
 // Thẻ xe dính (màn xả, ghép — canvas 6c, chị HanTT 02/10): (1) kéo lên = kéo danh sách cây trong xe lên, đầu thẻ xanh đứng yên đủ cỡ,
 // các dòng cây trôi vào dưới mép trắng → thẻ ngắn dần; (2) hết danh sách: đáy thẻ kéo đầu thẻ co theo thành dải gọn 56px, nhãn · Xe 109 · N cây cùng chân chữ;
@@ -952,13 +955,14 @@ function scrXaLo() {
 function scrXa() {
   const s = S.sess, c = S.chon;
   // d2c ⑪⑫: dòng tên Lô có khung tìm nhỏ bên phải, không chiếm dòng riêng; ⑩ nút Đổi Lô hàng nằm trên đầu màn
-  const dau = c ? `<div class="sect${s.ds.length ? ' dinh' : ''}" id="sect-lo"><span>${LO[c.lo].lo} · ${mauArt(c.vai)}</span>${khungTim('Tìm cây, Lot', true)}</div>` : '';
+  const dau = c ? `<div class="sect${s.ds.length ? ' dinh' : ''}" id="sect-lo"><span>${LO[c.lo].lo} · ${mauArt(c.vai)}</span>${khungTim('Tìm kiếm', true)}</div>` : '';
   return `<div class="scr">${bar('home', 'Xả vải', '', `<span class="nut2">${nutBar('doilo', 'Đổi Lô hàng')}${nutXe(s)}</span>`)}<div class="body" id="ds-xa">${s.ds.length ? '' : '<div class="hero-gap"></div>'}${bangLuot(s)}${dau}${c ? dsCay(c.lo, c.vai) : ''}</div></div>`;
 }
 // Chọn cây của một Lô: cây chờ xả của Lô (R8), nhóm theo màu · mã vải (tiêu đề dính đầu vùng cuộn tới hết nhóm) rồi theo Lot, trong Lot xếp theo mã cây; chạm dòng là cây vào xe.
 // Đầu nhóm Lot (cùng nền thẻ, chữ xám) bấm để thu / bung nhóm; mặc định bung hết.
 // Góc phải đầu màn: viên số cây trên xe (XE 109 • 2 cây), đổi số thì nảy lên để người chạm thấy cây đã vào xe
 // Khung tìm kính lúp dùng chung cho màn chọn cây (#68) và màn Ghép (#69): gõ là lọc ngay, X xoá chữ
+// chữ mờ chung "Tìm kiếm" cho mọi ô tìm (đồng bộ 04/10); tìm theo gì ghi ở URD R8, R15
 const khungTim = (goi, nho) => `<label class="tim-o${nho ? ' nho' : ''}">${ic('search', 'i-m c-3')}<input id="tim-cay" type="search" placeholder="${goi}" value="${esc(S.params.tim || '')}" autocomplete="off" aria-label="${goi}">${(S.params.tim || '').trim() ? `<button class="tim-xoa" data-a="timxoa" aria-label="Xoá chữ tìm">${ic('close', 'i-s c-3')}</button>` : ''}</label>`;
 const MAN_TIM = ['xa', 'ghep'];
 // Cây chờ xả của dòng Lô · Màu · Article (R8): khung tìm (#68) + nhóm theo Lot, trong Lot xếp theo mã cây; chạm dòng là cây vào xe.
@@ -1026,7 +1030,7 @@ function scrLayBan() {
     ? (nDu ? `<div class="card sunk" id="khoi-du">${bb.du.map(({ c }) => dongCay({ c, met: conMet(c), on: duTich.includes(c.id), a: 'tichdu', ten: 'Dùng phần dư', them: ' data-du="1"' })).join('')}</div>`
       : `<p class="note">Chưa có cây đã trải còn đủ ${so(b.dai)} m.</p>`)
     : (bb.xe.length ? `<div id="bang-xe">${bb.xe.map(n => theXe(n.xe, false, 'lấy cả ' + tenXe(n.xe),
-        n.ds.map(({ c, l }) => dongCay({ c, xa: daXa(l.r), kh: u(c, l.r).k === 'nokhai', met: conMet(c), ghi: ghi(c), on: false, a: 'tich', ten: 'Lấy' })).join(''), n.ds.length, n.ds.reduce((t, { c }) => t + conMet(c), 0), !(P.mo || []).includes(n.xe))).join('')}</div>`
+        n.ds.map(({ c, l }) => dongCay({ c, xa: daXa(l.r), kh: u(c, l.r).k === 'nokhai', met: conMet(c), ghi: ghi(c), on: false, a: 'tich', ten: 'Lấy' })).join(''), n.ds.length, n.ds.reduce((t, { c }) => t + conMet(c), 0), (bb.xe.length > 1) !== (P.mo || []).includes(n.xe))).join('')}</div>`
       : bb.vua.length ? '' : `<p class="note">${LO[b.lo].lo} chưa có cây ${VAI[b.vai]} đã xả.</p>`);
   return `<div class="scr">${bar('home', LO[b.lo].lo, b.so, nutBar('doiban', 'Đổi bàn'))}<div class="body" id="ds-ban">${hero}<div class="tab-body">${than}</div></div></div>`;
 }
@@ -1045,11 +1049,11 @@ function scrGhep() {
     khac = tim ? tatCa.filter(n => n.xe.toUpperCase().includes(tim) || n.ds.some(({ c }) => c.ma.toUpperCase().includes(tim))) : tatCa, vao = new Set(s.ds.filter(e => e.tu).map(e => e.cay));
   const dongDich = ({ c, l }) => vao.has(c.id) ? dongCay({ c, xa: daXa(l.r), met: metX(c), on: true, a: 'ghept', ten: 'Bỏ ghép' }) : dongCay({ c, met: metX(c), cu: true });
   const dau = dich.length ? xeDinh('Ghép vào', s.xe, dich.length, `<div class="hero-body xe-than" id="bang-dich">${dich.map(dongDich).join('')}</div>`)
-    : '<div class="hero-gap"></div>' + heroXe('Ghép vào', s.xe, 0, `<p class="hero-empty">${tx(s.xe, 1)} chưa có cây.</p>`);
+    : '<div class="hero-gap"></div>' + heroXe('Ghép vào', s.xe, 0, '<p class="hero-empty">Chưa có cây.</p>');
   const ds = khac.length ? `<div id="bang-ghep">${khac.map(n => theXe(n.xe, false, `ghép cả ${tenXe(n.xe)} sang ${tx(s.xe)}`,
-    n.ds.map(({ c, l }) => dongCay({ c, xa: daXa(l.r), met: metX(c), a: 'ghept', ten: 'Ghép' })).join(''), n.ds.length, n.ds.reduce((t, { c }) => t + metX(c), 0), !tim && !(S.params.mo || []).includes(n.xe))).join('')}</div>` : `<p class="note">${tim ? `Không có xe khớp “${esc(S.params.tim.trim())}”.` : 'Không có xe nào đang lấy dở.'}</p>`;
+    n.ds.map(({ c, l }) => dongCay({ c, xa: daXa(l.r), met: metX(c), a: 'ghept', ten: 'Ghép' })).join(''), n.ds.length, n.ds.reduce((t, { c }) => t + metX(c), 0), !tim && (khac.length > 1) !== (S.params.mo || []).includes(n.xe))).join('')}</div>` : `<p class="note">${tim ? `Không có xe khớp “${esc(S.params.tim.trim())}”.` : 'Không có xe nào đang lấy dở.'}</p>`;
   return `<div class="scr">${bar('home', 'Ghép xe vải', '', nutXe(s))}<div class="body" id="ds-ghep">${dau}
-  <div class="sect${dich.length ? ' dinh' : ''}" id="sect-xe"><span>Danh sách Xe cần ghép</span>${tatCa.length ? khungTim('Tìm xe, cây', true) : ''}</div>${ds}</div></div>`;
+  <div class="sect${dich.length ? ' dinh' : ''}" id="sect-xe"><span>Danh sách Xe cần ghép</span>${tatCa.length ? khungTim('Tìm kiếm', true) : ''}</div>${ds}</div></div>`;
 }
 // Ghép nhiều cây (tích ô dòng xe): cây Lô khác → hỏi như R11; trả lời Thêm vào xe thì ghép tiếp số còn lại
 function ghepNhieu(ids) {
