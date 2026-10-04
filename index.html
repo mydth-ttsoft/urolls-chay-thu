@@ -1019,7 +1019,7 @@ function daXa(r) {
 const tenXe = xe => esc(xeHopLe(xe) ? tx(xe) : 'xe không rõ, số đã ghi ' + txLa(xe));
 // Lấy vải theo Bàn cắt (không có khung camera, nút Đổi bàn về màn quét bàn). Đầu màn Lô, dưới là mã Bàn cắt (R17).
 // Khối dính đầu vùng cuộn: thẻ lớn Màu SP · Loại BTP · Article; Cần | Thiếu (Đủ: Thiếu 0 m xanh lá · thừa: nhãn Thừa cam), thanh tiến độ ở đáy phần trắng
-// (ẩn khi Đủ / Thừa), dưới Thiếu là số cây dở · mới · số lớp các cây đó trải được (R18); ngay dưới thẻ là 2 tab Cây trên xe (mặc định) · Cây đã trải.
+// (luôn hiện: xanh lá, thừa thì cam), dưới Thiếu là số cây dở · mới · số lớp các cây đó trải được (R18); ngay dưới thẻ là 2 tab Cây trên xe (mặc định) · Cây đã trải.
 // Tab Cây đã trải: hiện hết cây, tích chỉ để tính vào Thiếu, không ghi phiếu (R20, CR-001). Tab Cây trên xe: mỗi xe một thẻ, chạm dòng = lấy / bỏ lấy cây đó;
 // bấm giữ nhãn xe = lấy cả xe (R19, CR-003)
 function scrLayBan() {
@@ -1030,7 +1030,8 @@ function scrLayBan() {
   const facts = [['Màu SP', b.mau], ['Loại BTP', b.btp], ['Article', b.art]].map(([k, v]) => `<div><span class="ovl">${k}</span>${cat8(v)}</div>`).join('');
   const nums = `<div class="nums" id="dem-so"><div><span class="ovl">Cần</span><p><b>${so(dm.can)}</b> m</p><span class="phu" id="lop-dai">${b.lop} lớp × ${so(b.dai)} m</span></div>`
     + `<div class="thieu${tt}"><span class="ovl">${thieu < 0 ? 'Thừa' : 'Thiếu'}</span><p><b>${so(Math.abs(thieu))}</b> m</p><span class="phu da" id="tong-lay"><span><b>${dm.du.length}</b> dở</span><i>·</i><span><b>${dm.vua.length}</b> mới</span><i>·</i><span><b>${dm.lop}</b> lớp</span></span></div></div>`;
-  const prog = tt ? '' : `<div class="prog"><i style="width:${pct}%"></i></div>`;
+  // vạch tiến độ luôn hiện (d2c 04/10): xanh lá theo phần đã lấy; đủ = đầy xanh lá; thừa = đầy màu cam như chữ Thừa
+  const prog = `<div class="prog"><i class="${thieu < 0 ? 'qua' : 'ok'}" style="width:${pct}%"></i></div>`;
   const nXe = bb.xe.reduce((t, n) => t + n.ds.length, 0), nDu = bb.du.length;
   const tb = (k, ten, n) => `<button role="tab" aria-selected="${tab === k}" data-a="tab" data-v="${k}"><span class="lb">${ten}<span class="bdg">· ${n}</span></span></button>`;
   // d2c ①②③ 04/10: cây đã lấy cho bàn nằm trong thẻ Bàn cắt (như cây đã xả trong thẻ xe ở màn Xả vải), vòng check cuối dòng, chạm = bỏ lấy, cây về xe (R19; đồng bộ Xả · Bàn cắt · Ghép, d2c 04/10)
