@@ -1419,7 +1419,7 @@ document.addEventListener('submit', e => {
   if (f === 'login') {
     if (document.getElementById('mk').value !== '123456') toast('err', 'Sai mật khẩu. Mật khẩu thử là 123456.');
     // Tài khoản chưa được cấp quyền lập và duyệt phiếu Xả vải trên SMB → không vào app (mục 2, R1). Thử: tài khoản khongquyen
-    else if (document.getElementById('tk').value.trim() === 'khongquyen') toast('err', 'Tài khoản chưa có quyền phiếu Xả vải trên SMB. Nhờ văn phòng cấp quyền.');
+    else if (document.getElementById('tk').value.trim() === 'khongquyen') toast('err', 'Tài khoản chưa có quyền Xả vải trên SMB. Nhờ văn phòng cấp quyền.');
     else dangNhap(document.getElementById('tk').value);
   }
   else if (f === 'go') { const v = document.getElementById('gotay').value; doAct('scan', v); render(); const g = document.getElementById('gotay'); g.value = ''; g.focus(); return; }
